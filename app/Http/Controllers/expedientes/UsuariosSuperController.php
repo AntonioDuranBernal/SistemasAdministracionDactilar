@@ -45,10 +45,10 @@ class UsuariosSuperController extends Controller
         $otros_datos = $request->input('otros_datos');
     
        // Obtén los valores de los permisos del formulario como un array
-$permisos = $request->input('permisos', []);
+        $permisos = $request->input('permisos', []);
 
-// Define los nombres de los permisos
-$permisosNombres = [
+        // Define los nombres de los permisos
+        $permisosNombres = [
     'expediente_registrar',
     'expediente_consultar',
     'expediente_editar',
@@ -59,7 +59,7 @@ $permisosNombres = [
     'guardavalor_editar',
     'guardavalor_consultar',
     'guardavalor_reportes',
-];
+        ];
 
 // Inicializa un array para almacenar los valores de los permisos
 $valoresPermisos = [];
@@ -69,8 +69,8 @@ foreach ($permisosNombres as $permisoNombre) {
     $valoresPermisos[$permisoNombre] = in_array($permisoNombre, $permisos);
 }
 
-// Inserta el usuario en la tabla 'usuarioSistema' con los permisos
-$ultimoInsertado = DB::table('users')->insertGetId([
+   // Inserta el usuario en la tabla 'usuarioSistema' con los permisos
+   $ultimoInsertado = DB::table('users')->insertGetId([
     'nombre' => $nombre,
     'apellidos' => $apellidos,
     'registroHuellaDigital' => 12345,
@@ -86,10 +86,11 @@ $ultimoInsertado = DB::table('users')->insertGetId([
     'editarGuardavalores' => $valoresPermisos['guardavalor_editar'],
     'consultarGuardavalores' => $valoresPermisos['guardavalor_consultar'],
     'reportesGuardavalores' => $valoresPermisos['guardavalor_reportes'],
-]);
+    'password' => bcrypt($otros_datos),
+   ]);
 
-// Redirige a la página de inicio de usuarios
-return redirect()->route('homeUsuarios');
+   // Redirige a la página de inicio de usuarios
+   return redirect()->route('homeUsuarios');
 
     }
     

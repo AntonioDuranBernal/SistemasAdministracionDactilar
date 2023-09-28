@@ -42,13 +42,13 @@ class reportesController extends Controller
 
         // Configurar las cabeceras para la descarga
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="expedientes.xlsx"');
+        header('Content-Disposition: attachment;filename="atrasosExpedientes.xlsx"');
         header('Cache-Control: max-age=0');
 
         // Enviar el archivo al cliente
         $writer->save('php://output');
 
-    }
+    } 
 
     public function ejecutarExpedienteAtrasosSU(Request $request)
     {

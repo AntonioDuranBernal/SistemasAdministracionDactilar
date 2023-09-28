@@ -26,6 +26,8 @@ class LoginController extends Controller
         return view('login');
     }
 
+
+
     protected function attemptLogin(Request $request)
     {
         
@@ -34,15 +36,17 @@ class LoginController extends Controller
         'password' => ['required', 'numeric'],
         ]);
 
-        $idUsuarioSistema = $request->idUsuarioSistema;
-        $password = $request->password;
+        if (Auth::attempt($credentials)) {
+            // Autenticación exitosa
+            $idUsuarioSistema = $request->idUsuarioSistema;
+            $password = $request->password;
 
         $sql = DB::table('users')->select('idUsuarioSistema')->where('idUsuarioSistema', $idUsuarioSistema)->first();
         
-        if (!$sql || $password!=12345) {
+        /*if (!$sql || $password!=12345) {
             $mensaje = 'Credenciales no validas.';
             return view('welcome', compact('mensaje'));
-        }
+        }*/
 
         $permisos = DB::table('users')
             ->select('registrarExpediente', 'consultarExpediente', 'editarExpediente', 'eliminarExpediente', 'reportesExpediente',
@@ -67,11 +71,23 @@ class LoginController extends Controller
             }
         }
         
+        $request->session()->regenerate();
+
+        $usuario = Auth::user();
+        $nombre = $usuario->nombre;
+        echo $nombre;
+
         // Redirigir a la vista 'opciones' con los permisos
         return view('opcionesArea', ['permisos' => $permisos, 'idUsuarioSistema' => $idUsuarioSistema]);
         
+            
+        } else {
+            // Autenticación fallida
+            $mensaje = 'Credenciales no válidas.';
+            return view('welcome', compact('mensaje'));
+        }
+  
     }
-
 
 
 
