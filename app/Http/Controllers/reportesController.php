@@ -326,9 +326,13 @@ class reportesController extends Controller
             $registros = $elementosActualizados;
            }
 
+           $listaClientes = DB::table('users')
+           ->get();
+
            return view('expedientes.reportes.homeReportes3', [
             'elementos' => $elementosActualizados,
             'registros' => json_encode($registros),
+            'listaClientes' => $listaClientes,
            ]);
 
     }
@@ -396,16 +400,14 @@ class reportesController extends Controller
     }
 
     public function homeUsuarioSuper() {
-        return view('expedientes.reportes.homeReportes3',['elementos' => []]);
+        $listaClientes = DB::table('users')
+        ->get();
+        return view('expedientes.reportes.homeReportes3',['elementos' => [],'listaClientes' => $listaClientes]);
     }
 
     public function homeAtrasosSuper() {
         return view('expedientes.reportes.homeReportes4',['elementos' => []]);
     }
-
-    
-
-
 
     public function homeReportesBasico($id_u) {
         return view('expedientes.reportes.homeReportesBasico',['elementos' => [], 'id_usuario'=>$id_u]);

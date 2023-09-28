@@ -56,14 +56,20 @@
     @csrf
     <input type="hidden" name="elementos" value="{{ json_encode($elementos) }}">
 
+
     <div class="flex justify-center">
     <div class="w-1/3">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="id_expediente">
-            Número de Usuario
-        </label>
-        <input type="text" id="id_usuario" name="id_usuario" placeholder="Número de Usuario" class="w-full p-2 border border-gray-300 rounded">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="id_usuario">
+            Usuario
+        </label>                                                                                         
+    <select id="id_usuario" name="id_usuario" class="w-full p-2 border border-gray-300 rounded">
+    <option value="">Usuario</option>
+    @foreach ($listaClientes as $cliente)
+        <option value="{{ $cliente->idUsuarioSistema }}">{{ $cliente->idUsuarioSistema }} - {{ $cliente->nombre }} {{ $cliente->apellidos }}</option>
+    @endforeach
+    </select>                                       
     </div>
-</div>
+    </div>
 
 
         <div class="flex justify-center gap-4">
@@ -132,7 +138,42 @@
 
 </div>
 </div>
-
-
 </body>
 </html>
+
+<script>
+    // Agregar un evento de cambio al campo de selección
+    document.getElementById('id_usuario').addEventListener('input', function() {
+        var input = this.value;
+        var options = document.querySelectorAll('#id_usuario option');
+        
+        // Mostrar todas las opciones por defecto
+        options.forEach(function(option) {
+            option.style.display = 'block';
+        });
+
+        if (input) {
+            // Determinar si la entrada es un número o texto
+            var isNumeric = !isNaN(input);
+
+            // Ocultar las opciones que no coinciden con la entrada del usuario
+            options.forEach(function(option) {
+                var idCliente = option.value;
+                var nombre = option.text;
+
+                if (isNumeric) {
+                    // Si la entrada es un número, comparar con el campo id_cliente
+                    if (idCliente.indexOf(input) === -1) {
+                        option.style.display = 'none';
+                    }
+                } else {
+                    // Si la entrada es texto, comparar con el campo nombre
+                    if (nombre.toLowerCase().indexOf(input.toLowerCase()) === -1) {
+                        option.style.display = 'none';
+                    }
+                }
+            });
+        }
+    });
+</script>
+
