@@ -42,11 +42,6 @@ class LoginController extends Controller
             $password = $request->password;
 
         $sql = DB::table('users')->select('idUsuarioSistema')->where('idUsuarioSistema', $idUsuarioSistema)->first();
-        
-        /*if (!$sql || $password!=12345) {
-            $mensaje = 'Credenciales no validas.';
-            return view('welcome', compact('mensaje'));
-        }*/
 
         $permisos = DB::table('users')
             ->select('registrarExpediente', 'consultarExpediente', 'editarExpediente', 'eliminarExpediente', 'reportesExpediente',
@@ -75,11 +70,11 @@ class LoginController extends Controller
 
         $usuario = Auth::user();
         $nombre = $usuario->nombre;
+        $idUsuarioSistema = $usuario->idUsuarioSistema;
         echo $nombre;
 
         // Redirigir a la vista 'opciones' con los permisos
         return view('opcionesArea', ['permisos' => $permisos, 'idUsuarioSistema' => $idUsuarioSistema]);
-        
             
         } else {
             // Autenticación fallida

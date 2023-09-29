@@ -7,7 +7,7 @@ use App\Http\Controllers\expedientes\UsuariosSuperController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Controllers\reportesController;
-
+use App\Http\Controllers\guardavalores\GuardavaloresController;
 
 
 Route::get('/ReporteGeneralSU',[reportesController::class, 'homeReportesSuper'])->name('homeReportesUno');
@@ -46,13 +46,29 @@ Route::get('/InicioExpedientes/{idUser}',[UsuariosController::class, 'actividadI
 //CLIENTES BASICO EXP
 Route::get('/ClientesEUB/{idUser}',[UsuariosController::class, 'clientesUsuarioBasico'])->name('clientesBasico');
 
-//HOME USUARIO BASICO GV
-Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicio'])->name('expedientesGV');
-
 
 //SUPER OPCIONES
 //INICIO
 Route::get('/Expedientes',[ExpedientesSuperController::class, 'inicioExpedientes'])->name('homeAdminExpedientes');
+
+
+//HOME USUARIO BASICO GV
+Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicioGV'])->name('expedientesGV');
+
+//GUARDAVALORES
+//HOME INICIO ADMIN
+Route::get('/Guardavalores',[GuardavaloresController::class, 'homeAdminGuardavalores'])->name('homeAdminGuardavalores');
+
+//CLIENTES
+//HOME
+Route::get('/Guardavalores/Clientes',[ClientesController::class, 'inicioClientesGV'])->name('homeClientesGV');
+//BUSCAR
+Route::post('/ClienteBuscarGV',[ClientesController::class, 'searchGV'])->name('clientesGV.search');
+//PARA CREAR
+Route::get('/nuevoClienteGV',[ClientesController::class, 'nuevoGV'])->name('cliente.nuevoGV');
+//PARA GUARDAR
+Route::post('/GuardandoClienteGV',[ClientesController::class, 'storeGV'])->name('cliente.storeGV');
+
 
 //CLIENTES
 //HOME

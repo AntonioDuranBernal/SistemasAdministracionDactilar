@@ -16,13 +16,12 @@
             @csrf
 
             <div class="mb-4">
-                <label for="idUsuarioSistema" class="block text-gray-700 font-semibold mb-2">ID de Usuario</label>
+                <label for="idUsuarioSistema" class="block text-gray-700 font-semibold mb-2">Nùmero de Usuario</label>
                 <input
                     id="idUsuarioSistema"
                     type="text"
                     class="shadow appearance-none border rounded form-input w-full @error('idUsuarioSistema') border-red-500 @enderror"
                     name="idUsuarioSistema"
-                    value="{{ old('idUsuarioSistema') }}"
                     required
                     autofocus
                 />

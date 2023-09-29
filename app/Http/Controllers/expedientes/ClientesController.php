@@ -4,6 +4,7 @@ namespace App\Http\Controllers\expedientes;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ClientesController extends Controller
@@ -121,12 +122,71 @@ class ClientesController extends Controller
 
     }
 
+    public function inicioClientesGV(){
+        $elementos = DB::table('clientes_guardavalores')
+                        ->where('nombre', '!=', '') // Solo registros donde el nombre no está vacío
+                        ->get();
+
+                        $idUser = 1;
+
+                        $consulta = DB::table('users')
+                        ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
+                        ->where('idUsuarioSistema', $idUser)
+                        ->first();
+                    
+                        $permisos = (array) $consulta;
+                        $permisosUsuario = [];
+                    
+                        foreach ($permisos as $indice => $valor) {
+                        $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
+                        }
+        
+                        
+        return view('guardavalores.clientes.homeClientesGV', ['elementos' => $elementos, 'permisosUsuario' => $permisosUsuario]);
+    }
+
     public function inicioClientes(){
         $elementos = DB::table('clientes_expedientes')
                         ->where('nombre', '!=', '') // Solo registros donde el nombre no está vacío
                         ->get();
     
         return view('expedientes.clientes.homeClientesSuper', ['elementos' => $elementos]);
+    }
+
+    public function searchGV(Request $request) {
+        $id_cliente = $request->input('id_cliente');
+    
+        if (!is_numeric($id_cliente)) {
+            return redirect()->route('homeClientesGV')->with('error', 'El campo Nùmero de cliente debe ser un número.');
+        }
+    
+        $cliente = DB::table('clientes_guardavalores')
+            ->where('id_cliente', $id_cliente)
+            ->first();
+    
+        if (is_null($cliente)) {
+            return redirect()->route('homeClientesGV')->with('error', 'No se encontró ningún cliente con el ID proporcionado.');
+        }
+    
+        $elementos = [];
+        array_push($elementos, $cliente);
+
+        $idUser = 1;
+
+        $consulta = DB::table('users')
+        ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
+        ->where('idUsuarioSistema', $idUser)
+        ->first();
+    
+        $permisos = (array) $consulta;
+        $permisosUsuario = [];
+    
+        foreach ($permisos as $indice => $valor) {
+        $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
+        }
+
+    
+        return view('guardavalores.clientes.homeClientesGV', ['elementos' => $elementos, 'permisosUsuario' => $permisosUsuario]);
     }
     
     
@@ -192,12 +252,25 @@ class ClientesController extends Controller
             return view('expedientes.clientes.clientesCrear');
         }
 
+        public function nuevoGV(){
+            return view('guardavalores.clientes.clientesCrearGV');
+        }
+
         public function store(Request $request){
             $nombre = $request->nombre;
             DB::table('clientes_expedientes')->insert([
                 'nombre' => $nombre,
             ]);
             return redirect()->route('homeClientesSuper');
+        }
+
+        
+        public function storeGV(Request $request){
+            $nombre = $request->nombre;
+            DB::table('clientes_guardavalores')->insert([
+                'nombre' => $nombre,
+            ]);
+            return redirect()->route('homeClientesGV');
         }
 
         public function storeUsuarioClienteBasico(Request $request){
