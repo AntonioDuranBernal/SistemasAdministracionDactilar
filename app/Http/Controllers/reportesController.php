@@ -390,9 +390,8 @@ class reportesController extends Controller
        ]);
     }
 
-
     public function homeReportesSuper() {
-    return view('expedientes.reportes.homeReportesSuper',['elementos' => []]);
+        return view('expedientes.reportes.homeReportesSuper',['elementos' => []]);
     }
 
     public function homeDocumentoSuper() {

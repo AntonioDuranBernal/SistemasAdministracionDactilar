@@ -91,8 +91,12 @@
                         {{$elemento->id_cliente}}
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <a href="{{route('cliente.asignados', $elemento->id_cliente)}}">Asignados</a>
-                        <a href="{{route('clienteNuevoExpediente', $elemento->id_cliente)}}">Asignar</a>
+                        <a href="{{route('cliente.asignadosGV', $elemento->id_cliente)}}">Asignados</a>
+
+                        @if(collect($permisosUsuario)->where('indice', 'registrarGuardavalores')->first()['valor'] == 1)
+                        <a href="{{route('clienteNuevoGV', $elemento->id_cliente)}}">Asignar</a>
+                        @endif
+
                     </td>
                 </tr>
                 @endforeach

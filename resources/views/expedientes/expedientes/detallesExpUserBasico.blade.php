@@ -15,7 +15,7 @@
       
       <!-- Campo oculto para enviar el ID del cliente -->
       <input type="hidden" name="id_expediente" value="{{ $expediente->id_expediente}}">
-      
+
       <div class="mb-4 flex">
         <label class="block text-gray-700 text-sm font-bold mb-2 w-1/3">
           Número de Expediente:
@@ -92,21 +92,30 @@
         </span>
       </div>
       
-      @if($expediente->estado === 'Disponible' && collect($permisosUsuario)->where('indice', 'consultarExpediente')->first()['valor'] == 1)
+      <div class="flex justify-center mt-4">
+
+      @if($expediente->estado === 'Disponible')
+      @if(collect($permisosUsuario)->where('indice', 'consultarExpediente')->first()['valor'] == 1)
       <div class="flex justify-center mt-4">
       <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2" type="submit">
       Solicitar
       </button>
       <a href="{{ route('expedientesBasico',$id_usuario) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" style="margin-left: 1rem;">Volver</a>
-     </div>
+      @endif
+
+      <a href="{{ route('borrarExpediente', $expediente->id_expediente) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" style="margin-left: 1rem;">Eliminar</a>
+
+      </div>
       @else
         <div class="flex justify-center mt-4">
           <a href="{{route('expedientesBasico',$id_usuario)}}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Volver</a>
         </div>
       @endif
       
+      </div>
 
     </form>
   </div>
+
 </body>
 </html>

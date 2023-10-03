@@ -35,17 +35,17 @@
     
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="fechaDevolucion">
-              Fecha de Devolución:
+                Fecha de Devolución:
             </label>
-            <input type="text" id="fechaDevolucion" name="fecha_devolucion" value="2023-09-26" class="w-full p-2 border border-gray-300 rounded">
-          </div>
+            <input type="date" id="fechaDevolucion" name="fecha_devolucion" class="w-full p-2 border border-gray-300 rounded" required>
+        </div>
     
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="motivo">
-              Motivo:
-            </label>
-            <textarea id="motivo" name="motivo" class="w-full p-2 border border-gray-300 rounded"></textarea>
-          </div>
+        <div class="mb-4">
+    <label class="block text-gray-700 text-sm font-bold mb-2" for="motivo">
+        Motivo (máximo 250 caracteres):
+    </label>
+    <textarea id="motivo" name="motivo" placeholder="Ingresa el motivo de tu solicitud" class="w-full p-2 border border-gray-300 rounded" required maxlength="250"></textarea>
+</div>
 
         <div class="flex justify-center items-center space-x-4 mt-6">
                <a href="{{ route('expedientesBasico',$id_usuario) }}" class="bg-blue-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Volver</a>
@@ -55,16 +55,36 @@
         </form>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        flatpickr("#fechaDevolucion", {
-            enableTime: false,
-            dateFormat: "Y-m-d",
-            locale: "es",
-        });
+
+document.addEventListener('DOMContentLoaded', function () {
+    flatpickr("#fechaDevolucion", {
+        enableTime: false,
+        dateFormat: "Y-m-d",
+        locale: "es",
     });
+
+    // Validación personalizada de fecha
+    document.getElementById("actividadForm").addEventListener("submit", function (event) {
+        var fechaDevolucion = document.getElementById("fechaDevolucion").value;
+        var fechaMinima = "<?php echo $fecha; ?>";
+
+        if (fechaDevolucion === "") {
+            alert("Debes seleccionar una fecha de devolución.");
+            event.preventDefault(); // Evita que se envíe el formulario
+        } else if (fechaDevolucion < fechaMinima) {
+            alert("La fecha de devolución debe ser mayor o igual a la fecha actual.");
+            event.preventDefault(); // Evita que se envíe el formulario
+        }
+    });
+});
+
+
 </script>
+
 </body>
 </html>
+

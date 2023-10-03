@@ -15,30 +15,26 @@ Route::get('/ReporteDocumentoSU',[reportesController::class, 'homeDocumentoSuper
 Route::get('/ReporteUsuarioSU',[reportesController::class, 'homeUsuarioSuper'])->name('homeReportesTres');
 Route::get('/ReporteAtrasosSU',[reportesController::class, 'homeAtrasosSuper'])->name('homeReportesCuatro');
 
-
-
 Route::post('/ExpedienteGeneralSU', [reportesController::class, 'ejecutarExpedienteGeneralSU'])->name('ejecutarExpedienteGeneralSU');
 Route::post('/ExpedienteDocumentoSU', [reportesController::class, 'ejecutarExpedienteDocumentoSU'])->name('ejecutarExpedienteDocumentoSU');
 Route::post('/ExpedienteUsuarioSU', [reportesController::class, 'ejecutarExpedienteUsuarioSU'])->name('ejecutarExpedienteUsuarioSU');
 Route::post('/ExpedienteAtrasosSU', [reportesController::class, 'ejecutarExpedienteAtrasosSU'])->name('ejecutarExpedienteAtrasosSU');
-
 
 Route::get('/exportar-expedientes', [reportesController::class, 'exportarExpedientes'])->name('exportarExpedientes');
 Route::get('/exportarExpedientesR2', [reportesController::class, 'exportarExpedientesR2'])->name('exportarExpedientesR2');
 Route::get('/exportarExpedientesR3', [reportesController::class, 'exportarExpedientesR3'])->name('exportarExpedientesR3');
 Route::get('/exportarExpedientesR4', [reportesController::class, 'exportarExpedientesR4'])->name('exportarExpedientesR4');
 
-
-
-Route::view('/Expedientes/Configuracion', 'expedientes.configuracion.homeConfiguracionSuper')->name('homeConfiguracionSuper');
-
-//HOME INICIAL
-Route::view('/', 'welcome')->name('home');
-
 //LOGIN LOGOUT
 Route::get('/Ingreso',[LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/Registro',[LoginController::class, 'attemptLogin'])->name('autenticar');
 Route::get('/Opciones/{Permisos}',[LoginController::class, 'opciones'])->name('opciones');
+
+//HOME INICIAL
+Route::view('/', 'welcome')->name('home');
+
+
+Route::view('/Expedientes/Configuracion', 'expedientes.configuracion.homeConfiguracionSuper')->name('homeConfiguracionSuper');
 
 
 //HOME USUARIO BASICO EXP
@@ -47,7 +43,7 @@ Route::get('/InicioExpedientes/{idUser}',[UsuariosController::class, 'actividadI
 Route::get('/ClientesEUB/{idUser}',[UsuariosController::class, 'clientesUsuarioBasico'])->name('clientesBasico');
 
 
-//SUPER OPCIONES
+//USUARIOS OPCIONES EXPEDIENTES
 //INICIO
 Route::get('/Expedientes',[ExpedientesSuperController::class, 'inicioExpedientes'])->name('homeAdminExpedientes');
 
@@ -58,6 +54,13 @@ Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'activida
 //GUARDAVALORES
 //HOME INICIO ADMIN
 Route::get('/Guardavalores',[GuardavaloresController::class, 'homeAdminGuardavalores'])->name('homeAdminGuardavalores');
+Route::get('/AsignadosAClientesGV/{id_cliente}',[ClientesController::class, 'asignadosGV'])->name('cliente.asignadosGV');
+Route::get('/GVSeleccion/{id_cliente}',[ClientesController::class, 'clienteNuevoGV'])->name('clienteNuevoGV');
+Route::get('/GVCrear/{cliente}',[GuardavaloresController::class, 'documentoGV'])->name('crearDocumentoValor');
+Route::post('/GuardandoDV',[GuardavaloresController::class, 'storeDV'])->name('DVGuardar');
+Route::get('/ExpedientesHome',[GuardavaloresController::class, 'homeGV'])->name('homeGV');
+Route::post('/BuscarGVD',[GuardavaloresController::class, 'buscarGV'])->name('guardavalores.search');
+
 
 //CLIENTES
 //HOME
@@ -105,6 +108,10 @@ Route::get('/ExpedienteDetallesUB/{id_expediente}/{id_user}',[ExpedientesSuperCo
 Route::match(['get', 'post'], '/ExpedienteSolicitarUB/{id_expediente}/{id_usuario}', [ExpedientesSuperController::class, 'solicitarExpUB'])->name('solicitarExpedienteUBasico');
 //GUARDAR PRESTAMO USUARIO BASICO
 Route::post('/almacenarActividadUsuarioBasico', [ExpedientesSuperController::class, 'almacenarActividadUsuarioBasico'])->name('almacenarActividadUsuarioBasico');
+
+//BORRAR EXPEDIENTE
+Route::get('/expedientes/eliminar/{id}', [ExpedientesSuperController::class, 'eliminarExpediente'])->name('borrarExpediente');
+
 
 //ENTREGAR EXPEDIENTE
 Route::get('/devolverExpediente/{id_e}/{id_u}/{id_a}',[ExpedientesSuperController::class, 'devolverExpediente'])->name('devolverExpediente');

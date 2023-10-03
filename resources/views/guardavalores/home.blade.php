@@ -46,7 +46,7 @@
         <a href="{{ route('homeClientesGV') }}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
             Clientes
         </a>
-        <a href="{{ route('homeAdminGuardavalores') }}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
+        <a href="{{ route('homeGV') }}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
             Guardavalores
         </a>
         <a href="{{ route('homeAdminGuardavalores') }}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
@@ -82,40 +82,41 @@
         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" class="px-6 py-3">
-                Nombre <br> de usuario
+            <th scope="col" class="px-6 py-3">
+                Tipo <br> de documento
               </th>
               <th scope="col" class="px-6 py-3">
                 Nombre de documento
               </th>
               <th scope="col" class="px-6 py-3">
-                Fecha Ingreso
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Fecha Retiro
-              </th>
-              <th scope="col" class="px-6 py-3">
                 Movimiento
               </th>
+              <th scope="col" class="px-6 py-3">
+                Fecha
+              </th>
+              <th scope="col" class="px-6 py-3">
+                Nombre <br> de usuario
+              </th>
+
             </tr>
           </thead>
           <tbody>
             @foreach($elementos as $elemento)
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                {{$elemento->id_usuario}}
+                {{$elemento->tipo_gv}}
               </td>
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                 {{$elemento->id_documento}}
               </td>
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                {{$elemento->fecha_ingreso}}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                {{$elemento->fecha_retiro}}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                 {{$elemento->movimiento}}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                {{$elemento->fecha_actividad}}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                {{$elemento->id_usuario}}
               </td>
               <!--<td class="px-6 py-4 text-right">
                 <a href="{{route('homeAdminExpedientes')}}">Ver</a>

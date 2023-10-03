@@ -92,13 +92,17 @@
         </span>
       </div>
       
-      @if($expediente->estado === 'Disponible')
+      @if($expediente->estado == 'Disponible')
       <div class="flex justify-center mt-4">
-  <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2" type="submit">
-    Solicitar
-  </button>
-  <a href="{{ route('homeExpedientes') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" style="margin-left: 1rem;">Volver</a>
-</div>
+        <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2" type="submit">
+         Solicitar
+        </button>
+        <a href="{{ route('homeExpedientes') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" style="margin-left: 1rem;">Volver</a>
+      </div>
+
+      <!--
+        <a href="{{ route('borrarExpediente', $expediente->id_expediente) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" style="margin-left: 1rem;">Eliminar</a>
+      -->
 
       @else
         <div class="flex justify-center mt-4">

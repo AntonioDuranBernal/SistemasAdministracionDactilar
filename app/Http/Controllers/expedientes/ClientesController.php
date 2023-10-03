@@ -50,28 +50,13 @@ class ClientesController extends Controller
 
 
     public function searchBasico(Request $request) {
+        
         $id_cliente = $request->input('id_cliente');
         $id_usuario = $request->input('id_usuario');
 
         $usuario = DB::table('users')->where('idUsuarioSistema', $id_usuario)->first();
-
-    
-        if (!is_numeric($id_cliente)) {
-            return redirect()->route('homeClientesSuper')->with('error', 'El campo id_cliente debe ser un número.');
-        }
-    
-        $cliente = DB::table('clientes_expedientes')
-            ->where('id_cliente', $id_cliente)
-            ->first();
-    
-        if (is_null($cliente)) {
-            //return redirect()->route('homeClientesUsuario',$id_usuario)->with('error', 'No se encontró ningún cliente con el ID proporcionado.');
-            return redirect()->route('homeClientesUsuario', $id_usuario);
-
-        }
-    
+        $cliente = [];
         $elementos = [];
-        array_push($elementos, $cliente);
 
         $consulta = DB::table('users')
         ->select('registrarExpediente', 'consultarExpediente', 'editarExpediente', 'eliminarExpediente', 'reportesExpediente')
@@ -88,13 +73,41 @@ class ClientesController extends Controller
         echo "Permisos de lectura: ";
                     foreach ($permisos as $permiso) {
                         echo $permiso . " ";
-                    }
+        }
+        
+        if (is_numeric($id_cliente)) {
+
+            $cliente = DB::table('clientes_expedientes')
+            ->where('id_cliente',$id_cliente)
+            ->get();
+
+        } else {
+
+            $cliente = DB::table('clientes_expedientes')
+            ->where('nombre', 'LIKE',"%$id_cliente%")
+            ->get();
+
+        }
     
+        if ($cliente->isEmpty()) {
+            $cliente = DB::table('clientes_expedientes')
+            ->get();
+            $elementos=$cliente;
+            return view('expedientes.clientes.homeClientesBasico', ['elementos' => $elementos, 'permisosUsuario'=>$permisosUsuario,'usuario' => $usuario]);
+        }
+        $elementos=$cliente;
         return view('expedientes.clientes.homeClientesBasico', ['elementos' => $elementos, 'permisosUsuario'=>$permisosUsuario,'usuario' => $usuario]);
+
     }
     
     public function inicioClientesUsuarioX($idUser) {
+
+        //$usuario = Auth::user();
+        //$idUser = $usuario->idUsuarioSistema;
+        //$nombre = $usuario->nombre;
     
+        $idUser = 7;
+
         $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
 
         $consulta = DB::table('users')
@@ -112,18 +125,18 @@ class ClientesController extends Controller
         $clientes = DB::table('clientes_expedientes')
         ->get();
 
-                    echo "Permisos de lectura: ";
-                    foreach ($permisos as $permiso) {
-                        echo $permiso . " ";
-                    }
+            echo "Permisos de lectura: ";
+            foreach ($permisos as $permiso) {
+                echo $permiso . " ";
+            }
 
         return view('expedientes.clientes.homeClientesBasico', ['elementos' => $clientes,'permisosUsuario' => $permisosUsuario, 'usuario' => $user]);
-
 
     }
 
     public function inicioClientesGV(){
-        $elementos = DB::table('clientes_guardavalores')
+
+                        $elementos = DB::table('clientes_guardavalores')
                         ->where('nombre', '!=', '') // Solo registros donde el nombre no está vacío
                         ->get();
 
@@ -141,10 +154,10 @@ class ClientesController extends Controller
                         $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
                         }
         
-                        
         return view('guardavalores.clientes.homeClientesGV', ['elementos' => $elementos, 'permisosUsuario' => $permisosUsuario]);
     }
 
+    
     public function inicioClientes(){
         $elementos = DB::table('clientes_expedientes')
                         ->where('nombre', '!=', '') // Solo registros donde el nombre no está vacío
@@ -192,29 +205,36 @@ class ClientesController extends Controller
     
     public function search(Request $request) {
         $id_cliente = $request->input('id_cliente');
-    
-        if (!is_numeric($id_cliente)) {
-            return redirect()->route('homeClientesSuper')->with('error', 'El campo id_cliente debe ser un número.');
+        
+        if (is_numeric($id_cliente)) {
+
+            $cliente = DB::table('clientes_expedientes')
+            ->where('id_cliente', $id_cliente)
+            ->get();
+
+        } else {
+
+            $cliente = DB::table('clientes_expedientes')
+            ->where('nombre', 'LIKE', "%$id_cliente%")
+            ->get();
+
         }
     
-        $cliente = DB::table('clientes_expedientes')
-            ->where('id_cliente', $id_cliente)
-            ->first();
-    
-        if (is_null($cliente)) {
+        if ($cliente->isEmpty()) {
             return redirect()->route('homeClientesSuper')->with('error', 'No se encontró ningún cliente con el ID proporcionado.');
         }
     
-        $elementos = [];
-        array_push($elementos, $cliente);
+        //$elementos = [];
+        //array_push($elementos, $cliente);
     
-        return view('expedientes.clientes.homeClientesSuper', ['elementos' => $elementos]);
+        return view('expedientes.clientes.homeClientesSuper', ['elementos' => $cliente]);
     }
 
     public function clienteNuevoExpediente($id_cliente){
-        date_default_timezone_set('America/Mexico_City');
+
         $fecha_actual = date("Y-m-d h:m:s");
         //$stringDate = date("Y-m-d",strtotime($fecha_actual."+ 3 days"));
+
         $Cliente = DB::table('clientes_expedientes')
         ->where('id_cliente', $id_cliente)
         ->first();
@@ -222,6 +242,19 @@ class ClientesController extends Controller
         return view('expedientes.expedientes.asignarExpedienteCrear',['fechaRegistro'=>$fecha_actual,'cliente'=>$Cliente]);
         
         }
+
+        public function clienteNuevoGV($id_cliente){
+    
+            $cliente = DB::table('clientes_guardavalores')
+            ->where('id_cliente', $id_cliente)
+            ->first();
+            
+            $id = 0;
+    
+            //MODIFICAR PARA GV
+            return view('guardavalores.guardavalores.opcionesCrear',['id'=>$id,'cliente'=>$cliente]);
+            
+            }
 
         public function storeExpediente(Request $request) {
             
@@ -257,6 +290,7 @@ class ClientesController extends Controller
         }
 
         public function store(Request $request){
+            
             $nombre = $request->nombre;
             DB::table('clientes_expedientes')->insert([
                 'nombre' => $nombre,
@@ -283,29 +317,6 @@ class ClientesController extends Controller
 
         }
 
-        
-        
-
-        /*public function asignados($id_cliente){
-        
-            if (!is_numeric($id_cliente)) {
-                return redirect()->route('homeClientesSuper')->with('error', 'El campo id_cliente debe ser un número.');
-            }
-        
-            $expedientes = DB::table('expedientes')
-                ->where('id_cliente', $id_cliente)
-                ->get();
-        
-            if (is_null($expedientes)) {
-                return redirect()->route('homeClientesSuper')->with('error', 'No se encontró ningún expediente de ese cliente.');
-            }
-        
-            $elementos = [];
-            array_push($elementos, $expedientes);
-        
-            return view('expedientes.clientes.asignadosCliente', ['elementos' => $elementos]);
-        }*/
-
         public function asignados($id_cliente){
         
             if (!is_numeric($id_cliente)) {
@@ -318,7 +329,7 @@ class ClientesController extends Controller
             $nombre = $cliente->nombre;
         
             $expedientes = DB::table('expedientes')
-                ->where('id_cliente', $id_cliente)
+                ->where('id_cliente',$id_cliente)
                 ->get();
         
             if ($expedientes->isEmpty()) { // Verifica si la colección de expedientes está vacía
@@ -327,6 +338,30 @@ class ClientesController extends Controller
         
             return view('expedientes.clientes.asignadosCliente', ['elementos' => $expedientes, 'nombre' => $nombre]);
         }
+
+        public function asignadosGV($id_cliente){
+        
+            if (!is_numeric($id_cliente)) {
+                return redirect()->route('homeClientesGV')->with('error', 'El campo nùmero de cliente debe ser un número.');
+            }
+
+            $cliente = DB::table('clientes_guardavalores')
+                ->where('id_cliente', $id_cliente)
+                ->first();
+            $nombre = $cliente->nombre;
+        
+            $guardavalores = DB::table('guardavalores')
+                ->where('id_cliente',$id_cliente)
+                ->get();
+        
+            if ($guardavalores->isEmpty()) { // Verifica si la colección de gv está vacía
+                return redirect()->route('homeClientesGV')->with('error', 'No se encontró ningún documento de ese cliente.');
+            }
+            //CAMBIAR A GV
+            return view('guardavalores.guardavalores.asignadosACliente', ['elementos' => $guardavalores, 'nombre' => $nombre]);
+        }
+
+
 
         public function nuevoClienteBasico($id_usuario){
             return view('expedientes.clientes.clientesCrearBasico', ['id_usuario' => $id_usuario]);

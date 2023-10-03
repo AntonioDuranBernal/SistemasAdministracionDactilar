@@ -11,22 +11,11 @@ use Illuminate\Support\Facades\DB;
 
 class LoginController extends Controller
 {
-    //use AuthenticatesUsers;
-
-    protected $redirectTo = '/home';
-
-    /*public function __construct()
-    {
-        $this->middleware('guest')->except('logout');
-    }*/
-
 
     public function showLoginForm()
     {
         return view('login');
     }
-
-
 
     protected function attemptLogin(Request $request)
     {
@@ -37,6 +26,7 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+
             // Autenticación exitosa
             $idUsuarioSistema = $request->idUsuarioSistema;
             $password = $request->password;
@@ -69,9 +59,10 @@ class LoginController extends Controller
         $request->session()->regenerate();
 
         $usuario = Auth::user();
-        $nombre = $usuario->nombre;
         $idUsuarioSistema = $usuario->idUsuarioSistema;
-        echo $nombre;
+        $nombre = $usuario->nombre;
+
+        echo "USUARIO LOGEADOO: ".$idUsuarioSistema. " NOMBRE LOGIN CONTROLLER: ".$nombre;
 
         // Redirigir a la vista 'opciones' con los permisos
         return view('opcionesArea', ['permisos' => $permisos, 'idUsuarioSistema' => $idUsuarioSistema]);
@@ -83,39 +74,6 @@ class LoginController extends Controller
         }
   
     }
-
-
-
-    /*protected function attemptLogin(Request $request){
-
-    $credentials = $request->validate([
-        'idUsuarioSistema' => ['required', 'numeric'], 
-        'password' => ['required', 'numeric'],
-    ]); 
-
-    $idUsuarioSistema = 2;
-
-    /*if (Auth::attempt($credentials)) {
-        // Si la autenticación es exitosa, el usuario estará autenticado
-        $request->session()->regenerate();
-        $user = Auth::user();
-
-        // Obtener el ID del usuario logeado
-        $idUsuarioSistema = $user->idUsuarioSistema;
-
-        // Redirigir a la ruta 'actividadInicio' con el parámetro 'idUsuarioSistema'
-        return redirect()->route('actividadInicio', ['idUsuarioSistema' => $idUsuarioSistema]);
-    } else {
-        // Si la autenticación falla, puedes manejar el error aquí
-        throw ValidationException::withMessages([
-            'idUsuarioSistema' => [trans('auth.failed')],
-        ]);
-
-    }
-
-    return redirect()->route('actividadInicio', ['idUsuarioSistema' => $idUsuarioSistema]);
-
-    }*/
 
 
 

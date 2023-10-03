@@ -29,9 +29,8 @@
   </style>
 </head>
 <body>
+
   <nav class="flex items-center justify-between bg-blue-500 p-6">
-    <!-- Agrega la imagen al inicio del menú -->
-    <!--<img src="imagenes/los_alamos_imagen.jpeg" alt="Logo" class="h-10 w-10 mr-2">-->
     
     <div class="block lg:hidden">
       <button class="flex items-center px-3 py-2 border rounded text-teal-200 border-teal-400 hover:text-white hover:border-white">

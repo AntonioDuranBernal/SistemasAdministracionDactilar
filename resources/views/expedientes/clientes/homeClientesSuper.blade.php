@@ -44,7 +44,6 @@
     </a>
 </div>
 
-
     {{-- Muestra el formulario de búsqueda en lugar de "Elemento 2" --}}
     <div class="col-span-8 h-[100px] p-3"> <!-- Quita la clase bg-gray-200 y aplica una altura fija -->
         <form class="rounded mb-4 bg-transparent" action="{{route('clientes.search')}}" method="POST"> <!-- Agrega una clase personalizada para quitar el fondo de color -->
