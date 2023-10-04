@@ -99,7 +99,9 @@
                             {{$elemento->estado}}
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <a href="{{route('home')}}">Detalles</a>
+                        @if(collect($listadoPermisos)->where('indice', 'consultarGuardavalores')->first()['valor'] == 1)
+                            <a href="{{route('consultarGV', $elemento->id_documento)}}">Consultar</a>
+                        @endif
                         </td>
                     </tr>
                     @endforeach

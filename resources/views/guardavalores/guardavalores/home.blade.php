@@ -83,6 +83,9 @@
                             Fecha Registro
                         </th>
                         <th scope="col" class="px-6 py-3">
+                            Disponibilidad
+                        </th>
+                        <th scope="col" class="px-6 py-3">
                             <span class="sr-only">Opción</span>
                         </th>
                     </tr>
@@ -100,10 +103,14 @@
                             {{$elemento->numero_contrato}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-    {{ \Carbon\Carbon::parse($elemento->fecha_creacion)->format('d/m/Y') }}
-</td>
+                       {{ \Carbon\Carbon::parse($elemento->fecha_creacion)->format('d/m/Y') }}
+                         </td><td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {{$elemento->estado}}
+                        </td>
                         <td class="px-6 py-4 text-right">
-                            <a href="{{route('home' )}}">Detalles</a>
+                        @if(collect($permisosUsuario)->where('indice', 'consultarGuardavalores')->first()['valor'] == 1)
+                            <a href="{{route('consultarGV', $elemento->id_documento)}}">Consultar</a>
+                        @endif
                         </td>
                     </tr>
                     @endforeach

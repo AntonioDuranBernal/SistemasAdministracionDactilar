@@ -353,12 +353,29 @@ class ClientesController extends Controller
             $guardavalores = DB::table('guardavalores')
                 ->where('id_cliente',$id_cliente)
                 ->get();
+
+                $idUser = 1;
+                $idRol = 3;
+            
+                echo 'EL ID DEL USUARIO ES: '.$idUser;
+            
+                $consulta = DB::table('users')
+                    ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
+                    ->where('idUsuarioSistema', $idUser)
+                    ->first();
+            
+                $permisos = (array) $consulta;
+                $permisosUsuario = [];
+            
+                foreach ($permisos as $indice => $valor) {
+                    $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
+                }
         
             if ($guardavalores->isEmpty()) { // Verifica si la colección de gv está vacía
                 return redirect()->route('homeClientesGV')->with('error', 'No se encontró ningún documento de ese cliente.');
             }
             //CAMBIAR A GV
-            return view('guardavalores.guardavalores.asignadosACliente', ['elementos' => $guardavalores, 'nombre' => $nombre]);
+            return view('guardavalores.guardavalores.asignadosACliente', ['listadoPermisos'=> $permisosUsuario, 'elementos' => $guardavalores, 'nombre' => $nombre]);
         }
 
 

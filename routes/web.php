@@ -61,6 +61,21 @@ Route::post('/GuardandoDV',[GuardavaloresController::class, 'storeDV'])->name('D
 Route::get('/ExpedientesHome',[GuardavaloresController::class, 'homeGV'])->name('homeGV');
 Route::post('/BuscarGVD',[GuardavaloresController::class, 'buscarGV'])->name('guardavalores.search');
 
+Route::get('/ContratoCrear/{cliente}',[GuardavaloresController::class, 'contratoGV'])->name('crearContrato');
+Route::get('/PagareCrear/{cliente}',[GuardavaloresController::class, 'pagareGV'])->name('crearPagare');
+Route::post('/GuardandoPagare',[GuardavaloresController::class, 'storePagare'])->name('pagareGuardar');
+
+Route::post('/GuardandoContrato',[GuardavaloresController::class, 'storeContrato'])->name('contratoGuardar');
+Route::get('/consultarGV/{id_C}',[GuardavaloresController::class, 'consultarGV'])->name('consultarGV');
+Route::post('/retirarGV/{id_documento}',[GuardavaloresController::class, 'retirarGV'])->name('retirarGV');
+
+Route::post('/almacenarActividadGV',[GuardavaloresController::class, 'almacenarActividadGV'])->name('almacenarActividadGV');
+
+
+
+
+
+
 
 //CLIENTES
 //HOME
