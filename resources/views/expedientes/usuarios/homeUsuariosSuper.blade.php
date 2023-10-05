@@ -37,7 +37,7 @@
     <div class="grid grid-cols-12 gap-4">
   
 <div class="col-span-2 flex-grow flex-shrink p-6">
-    <a href="{{ route('homeAdminExpedientes') }}">
+    <a href="{{ route('volverHomeSegunArea') }}">
         <button class="w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-4">Volver</button>
     </a>
 </div>
@@ -65,7 +65,7 @@
 </div>
 </div>
 
-<h1 class="text-2xl font-bold mb-4 text-center">USUARIOS REGISTRADOS</h1>
+<h1 class="text-2xl font-bold mb-4 text-center">USUARIOS REGISTRADOsS</h1>
 
             @if(!is_null($elementos) && count($elementos) > 0)
             <div class="custom-scroll">

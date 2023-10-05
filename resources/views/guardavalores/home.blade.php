@@ -49,10 +49,14 @@
         <a href="{{ route('homeGV') }}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
             Guardavalores
         </a>
-        <a href="{{ route('homeAdminGuardavalores') }}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
+
+        @if($idRol>2)
+        <a href="{{ route('homeUsuarios') }}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
             Usuarios
         </a>
+        @endif
 
+        @if(collect($listadoPermisos)->where('indice', 'reportesGuardavalores')->first()['valor'] == 1)
         <a class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
         <div class="text-lg lg:flex-grow">
         <div class="relative inline-block text-white">
@@ -66,6 +70,7 @@
         </div>
         </div>
         </a>
+        @endif
     
       </div>
       </div>

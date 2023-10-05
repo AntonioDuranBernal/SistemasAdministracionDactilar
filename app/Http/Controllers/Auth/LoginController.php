@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\DB;
 class LoginController extends Controller
 {
 
+    public function __construct(){
+        $this->middleware('auth',['except'=>['showLoginForm', 'attemptLogin']]);
+    }
+
     public function showLoginForm()
     {
         return view('login');
@@ -21,14 +25,15 @@ class LoginController extends Controller
     {
         
         $credentials = $request->validate([
-        'idUsuarioSistema' => ['required', 'numeric'], 
-        'password' => ['required', 'numeric'],
+        'email' => ['required'], 
+        'password' => ['required'],
         ]);
 
         if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
             // Autenticación exitosa
-            $idUsuarioSistema = $request->idUsuarioSistema;
+            $idUsuarioSistema = $request->email;
             $password = $request->password;
 
         $sql = DB::table('users')->select('idUsuarioSistema')->where('idUsuarioSistema', $idUsuarioSistema)->first();
@@ -56,17 +61,14 @@ class LoginController extends Controller
             }
         }
         
-        $request->session()->regenerate();
-
         $usuario = Auth::user();
         $idUsuarioSistema = $usuario->idUsuarioSistema;
         $nombre = $usuario->nombre;
 
-        echo "USUARIO LOGEADOO: ".$idUsuarioSistema. " NOMBRE LOGIN CONTROLLER: ".$nombre;
+        echo "USUARIO LOGEADOO: ".$idUsuarioSistema. " NOMBRE LOGIN CONTROLLERR: ".$nombre;
 
-        // Redirigir a la vista 'opciones' con los permisos
         return view('opcionesArea', ['permisos' => $permisos, 'idUsuarioSistema' => $idUsuarioSistema]);
-            
+
         } else {
             // Autenticación fallida
             $mensaje = 'Credenciales no válidas.';
@@ -74,6 +76,8 @@ class LoginController extends Controller
         }
   
     }
+
+    
 
 
 

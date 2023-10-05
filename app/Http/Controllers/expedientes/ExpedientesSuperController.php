@@ -48,9 +48,9 @@ class ExpedientesSuperController extends Controller
         //$nombre = $usuario->nombre;
         //$idRol = $usuario->rol;
 
-        $idUser = 7;
+        $idUser = 1;
         $nombre = 'ES BASICO EN EXPEDIENTES SUPER CONTROLLER';
-        $idRol = 1;
+        $idRol = 3;
 
         echo "USUARIO LOGEADOO: ".$idUser. " NOMBRE: ".$nombre;
 

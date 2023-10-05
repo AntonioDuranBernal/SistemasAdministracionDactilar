@@ -16,16 +16,16 @@
             @csrf
 
             <div class="mb-4">
-                <label for="idUsuarioSistema" class="block text-gray-700 font-semibold mb-2">Nùmero de Usuario</label>
+                <label for="email" class="block text-gray-700 font-semibold mb-2">Nùmero de Usuario</label>
                 <input
-                    id="idUsuarioSistema"
+                    id="email"
                     type="text"
-                    class="shadow appearance-none border rounded form-input w-full @error('idUsuarioSistema') border-red-500 @enderror"
-                    name="idUsuarioSistema"
+                    class="shadow appearance-none border rounded form-input w-full @error('email') border-red-500 @enderror"
+                    name="email"
                     required
                     autofocus
                 />
-                @error('idUsuarioSistema')
+                @error('email')
                 <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                 @enderror
             </div>

@@ -13,6 +13,9 @@ use Carbon\Carbon;
 class GuardavaloresController extends Controller
 {
 
+    public function __construct(){
+        $this->middleware('auth');
+    }
 
     public function buscarGV(Request $request) {
         $id_gv = $request->input('id_gv');
@@ -234,14 +237,15 @@ class GuardavaloresController extends Controller
         //$idUser = $usuario->idUsuarioSistema;
         //$idUser = auth()->user()->idUsuarioSistema;
 
-        /*$idUser = DB::table('users')
+        $idUser = DB::table('users')
         ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
-        ->value('idUsuarioSistema');*/
+        ->value('idUsuarioSistema');
 
-        $idUser = 1;
-        $idRol = 3;
+        $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
 
-        echo 'EL ID DEL USUARIO ES: '.$idUser;
+        $idRol = $user->rol;
+
+        echo 'EL ID DEL USUARIO ES: '.$idUser. 'CON EL ROL'. $idRol.' EN GUARDAVALORES CONTROLLER';
 
         $consulta = DB::table('users')
         ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
@@ -300,7 +304,7 @@ class GuardavaloresController extends Controller
             $elementosActualizados[] = (object) $elementoOriginal;
         }
 
-        return view('guardavalores.home', ['idRol' => 3, 'elementos' => $elementosActualizados, 'listadoPermisos' => $permisosUsuario]);
+        return view('guardavalores.home', ['idRol' => $idRol, 'elementos' => $elementosActualizados, 'listadoPermisos' => $permisosUsuario]);
     
     }
 

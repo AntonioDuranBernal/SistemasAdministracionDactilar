@@ -10,57 +10,59 @@ use Illuminate\Support\Facades\Auth;
 class UsuariosController extends Controller
 {
 
+    public function __construct(){
+        $this->middleware('auth');
+    }
+
     public function actividadInicioGV($idUser) {
 
-        //if (Auth::check()) {
+            //if (Auth::check()) {
+                $idUser = DB::table('users')
+                ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+                ->value('idUsuarioSistema');
             
-        //$usuario = Auth::user();
-        //$idUser = $usuario->idUsuarioSistema;        
-        $idUser = 1;
+            //$usuario = Auth::user();
+            //$idUser = $usuario->idUsuarioSistema;   
+            //auth()->user()->idUsuarioSistema
+            
 
-        $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
-
-        $consulta = DB::table('users')
-        ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
-        ->where('idUsuarioSistema', $idUser)
-        ->first();
+            //Auth::login($usuario);
+            //$idUser = $usuario->idUsuarioSistema;
+            //$nombre = $usuario->nombre;
     
-        $permisos = (array) $consulta;
-        $permisosUsuario = [];
+            //$idUser = 7;
     
-        foreach ($permisos as $indice => $valor) {
-        $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
-        }
-
-        $elementos = [];        
-
-        foreach ($permisos as $permiso) {
-            echo $permiso . " ";
-        }
-
-        if ($user) {
-            // Verificamos el valor del rol (supongamos que el rol se almacena en un campo llamado 'rol' en la tabla 'users')
-            switch ($user->rol) {
-                case 1:
-                    //return view('expedientes.super.homeAdmin', ['elementos' => $elementos,'permisosUsuario' => $permisosUsuario, 'usuario' => $idUser]);
-                    break;
-                case 2:
-                    //return view('expedientes.super.homeAdmin', ['elementos' => $elementos,'permisosUsuario' => $permisosUsuario, 'usuario' => $idUser]);
-                    break;
-                case 3:
-                    return redirect()->route('homeAdminGuardavalores');
-                    break;
-                default:
-                    echo "Rol desconocido";
+            $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
+    
+            $consulta = DB::table('users')
+            ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
+            ->where('idUsuarioSistema', $idUser)
+            ->first();
+        
+            $permisos = (array) $consulta;
+            $permisosUsuario = [];
+            
+            DB::table('users')     //AISGANCION DE AREA EN USO
+            ->where('idUsuarioSistema', $idUser)
+            ->update(['area' => 2]);
+    
+            foreach ($permisos as $indice => $valor) {
+            $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
             }
-        } else {
-            // NO SE ENCONTRO USUARIO
-            echo "Usuario no encontrado";
-        }
-
-        //}else {
-          //  echo "Usuario no logeado";
-        // }
+    
+            $elementos = [];        
+    
+            foreach ($permisos as $permiso) {
+                echo $permiso . " ";
+            }
+    
+            if ($user) {
+                return redirect()->route('homeAdminGuardavalores');
+            }
+            else {
+            echo "Auth Check Falló, no logueado.";
+            return redirect()->route('home');
+            }
 
     }
     

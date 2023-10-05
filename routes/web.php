@@ -10,6 +10,35 @@ use App\Http\Controllers\reportesController;
 use App\Http\Controllers\guardavalores\GuardavaloresController;
 
 
+
+//HOME INICIAL
+Route::view('/', 'welcome')->name('home');
+//LOGIN LOGOUT
+Route::get('/Ingreso',[LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/Registro',[LoginController::class, 'attemptLogin'])->name('autenticar');
+
+    //HOME USUARIO BASICO GV
+    //Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicioGV'])->name('expedientesGV');
+
+    /*Route::get('/InicioGuardavalores/{idUser}', [UsuariosController::class, 'actividadInicioGV'])
+    ->middleware('auth')
+    ->name('expedientesGV');*/
+
+
+    //Route::middleware(['auth'])->group(function () {
+
+        Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicioGV'])->name('expedientesGV');
+
+        //GUARDAVALORES
+        //HOME INICIO ADMIN
+        Route::get('/Guardavalores',[GuardavaloresController::class, 'homeAdminGuardavalores'])->name('homeAdminGuardavalores');
+
+        Route::get('/Opciones/{Permisos}',[LoginController::class, 'opciones'])->name('opciones');
+
+    //});
+    
+
+
 Route::get('/ReporteGeneralSU',[reportesController::class, 'homeReportesSuper'])->name('homeReportesUno');
 Route::get('/ReporteDocumentoSU',[reportesController::class, 'homeDocumentoSuper'])->name('homeReportesDos');
 Route::get('/ReporteUsuarioSU',[reportesController::class, 'homeUsuarioSuper'])->name('homeReportesTres');
@@ -25,15 +54,6 @@ Route::get('/exportarExpedientesR2', [reportesController::class, 'exportarExpedi
 Route::get('/exportarExpedientesR3', [reportesController::class, 'exportarExpedientesR3'])->name('exportarExpedientesR3');
 Route::get('/exportarExpedientesR4', [reportesController::class, 'exportarExpedientesR4'])->name('exportarExpedientesR4');
 
-//LOGIN LOGOUT
-Route::get('/Ingreso',[LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/Registro',[LoginController::class, 'attemptLogin'])->name('autenticar');
-Route::get('/Opciones/{Permisos}',[LoginController::class, 'opciones'])->name('opciones');
-
-//HOME INICIAL
-Route::view('/', 'welcome')->name('home');
-
-
 Route::view('/Expedientes/Configuracion', 'expedientes.configuracion.homeConfiguracionSuper')->name('homeConfiguracionSuper');
 
 
@@ -48,8 +68,6 @@ Route::get('/ClientesEUB/{idUser}',[UsuariosController::class, 'clientesUsuarioB
 Route::get('/Expedientes',[ExpedientesSuperController::class, 'inicioExpedientes'])->name('homeAdminExpedientes');
 
 
-//HOME USUARIO BASICO GV
-Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicioGV'])->name('expedientesGV');
 
 //GUARDAVALORES
 //HOME INICIO ADMIN
@@ -71,7 +89,7 @@ Route::post('/retirarGV/{id_documento}',[GuardavaloresController::class, 'retira
 
 Route::post('/almacenarActividadGV',[GuardavaloresController::class, 'almacenarActividadGV'])->name('almacenarActividadGV');
 
-
+Route::get('/UsuariosSistema',[UsuariosSuperController::class, 'volverHomeSegunArea'])->name('volverHomeSegunArea');
 
 
 

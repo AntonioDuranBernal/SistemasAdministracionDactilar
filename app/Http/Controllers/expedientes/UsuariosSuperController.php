@@ -9,6 +9,18 @@ use Illuminate\Support\Facades\DB;
 
 class UsuariosSuperController extends Controller
 {
+
+    public function volverHomeSegunArea() {
+        $idUser = 1;
+        $area = DB::table('users')->where('idUsuarioSistema', $idUser)->value('area');
+
+        if($area==1){
+            return redirect()->route('expedientesBasico',$idUser);
+        }else{
+            return redirect()->route('expedientesGV',$idUser);
+        }
+    }
+
     public function listadoUsuarios() {
         $usuarios = DB::table('users')->get();
     
@@ -86,7 +98,8 @@ foreach ($permisosNombres as $permisoNombre) {
     'editarGuardavalores' => $valoresPermisos['guardavalor_editar'],
     'consultarGuardavalores' => $valoresPermisos['guardavalor_consultar'],
     'reportesGuardavalores' => $valoresPermisos['guardavalor_reportes'],
-    'password' => bcrypt($otros_datos),
+    //'password' => bcrypt($otros_datos),
+    'password'=> app('hash')->make($otros_datos),
    ]);
 
    // Redirige a la página de inicio de usuarios
