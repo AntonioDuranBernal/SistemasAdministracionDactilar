@@ -13,46 +13,20 @@ use App\Http\Controllers\guardavalores\GuardavaloresController;
 
 //HOME INICIAL
 Route::view('/', 'welcome')->name('home');
+
 //LOGIN LOGOUT
 Route::get('/Ingreso',[LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/Registro',[LoginController::class, 'attemptLogin'])->name('autenticar');
+Route::get('/Opciones/{Permisos}',[LoginController::class, 'opciones'])->name('opciones');
 
-    //HOME USUARIO BASICO GV
-    //Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicioGV'])->name('expedientesGV');
-
-    /*Route::get('/InicioGuardavalores/{idUser}', [UsuariosController::class, 'actividadInicioGV'])
-    ->middleware('auth')
-    ->name('expedientesGV');*/
+//HOME GV
+Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicioGV'])->name('expedientesGV');
 
 
-    //Route::middleware(['auth'])->group(function () {
+//GUARDAVALORES
+//HOME
+Route::get('/Guardavalores',[GuardavaloresController::class, 'homeAdminGuardavalores'])->name('homeAdminGuardavalores');
 
-        Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicioGV'])->name('expedientesGV');
-
-        //GUARDAVALORES
-        //HOME INICIO ADMIN
-        Route::get('/Guardavalores',[GuardavaloresController::class, 'homeAdminGuardavalores'])->name('homeAdminGuardavalores');
-
-        Route::get('/Opciones/{Permisos}',[LoginController::class, 'opciones'])->name('opciones');
-
-    //});
-    
-
-
-Route::get('/ReporteGeneralSU',[reportesController::class, 'homeReportesSuper'])->name('homeReportesUno');
-Route::get('/ReporteDocumentoSU',[reportesController::class, 'homeDocumentoSuper'])->name('homeReportesDos');
-Route::get('/ReporteUsuarioSU',[reportesController::class, 'homeUsuarioSuper'])->name('homeReportesTres');
-Route::get('/ReporteAtrasosSU',[reportesController::class, 'homeAtrasosSuper'])->name('homeReportesCuatro');
-
-Route::post('/ExpedienteGeneralSU', [reportesController::class, 'ejecutarExpedienteGeneralSU'])->name('ejecutarExpedienteGeneralSU');
-Route::post('/ExpedienteDocumentoSU', [reportesController::class, 'ejecutarExpedienteDocumentoSU'])->name('ejecutarExpedienteDocumentoSU');
-Route::post('/ExpedienteUsuarioSU', [reportesController::class, 'ejecutarExpedienteUsuarioSU'])->name('ejecutarExpedienteUsuarioSU');
-Route::post('/ExpedienteAtrasosSU', [reportesController::class, 'ejecutarExpedienteAtrasosSU'])->name('ejecutarExpedienteAtrasosSU');
-
-Route::get('/exportar-expedientes', [reportesController::class, 'exportarExpedientes'])->name('exportarExpedientes');
-Route::get('/exportarExpedientesR2', [reportesController::class, 'exportarExpedientesR2'])->name('exportarExpedientesR2');
-Route::get('/exportarExpedientesR3', [reportesController::class, 'exportarExpedientesR3'])->name('exportarExpedientesR3');
-Route::get('/exportarExpedientesR4', [reportesController::class, 'exportarExpedientesR4'])->name('exportarExpedientesR4');
 
 Route::view('/Expedientes/Configuracion', 'expedientes.configuracion.homeConfiguracionSuper')->name('homeConfiguracionSuper');
 
@@ -88,14 +62,16 @@ Route::get('/consultarGV/{id_C}',[GuardavaloresController::class, 'consultarGV']
 Route::post('/retirarGV/{id_documento}',[GuardavaloresController::class, 'retirarGV'])->name('retirarGV');
 
 Route::post('/almacenarActividadGV',[GuardavaloresController::class, 'almacenarActividadGV'])->name('almacenarActividadGV');
-
 Route::get('/UsuariosSistema',[UsuariosSuperController::class, 'volverHomeSegunArea'])->name('volverHomeSegunArea');
 
+//EDITAR EXPEDIENTE
+Route::get('/EditarGV/{id}',[GuardavaloresController::class, 'editarGV'])->name('editarGV');
+//ACTUALIZAR DATOS EXPEDIENTE
+Route::put('/actualizarGV/{id}', [GuardavaloresController::class, 'actualizarGV'])->name('actualizarGV');
 
 
 
-
-//CLIENTES
+//CLIENTES GV
 //HOME
 Route::get('/Guardavalores/Clientes',[ClientesController::class, 'inicioClientesGV'])->name('homeClientesGV');
 //BUSCAR
@@ -104,6 +80,20 @@ Route::post('/ClienteBuscarGV',[ClientesController::class, 'searchGV'])->name('c
 Route::get('/nuevoClienteGV',[ClientesController::class, 'nuevoGV'])->name('cliente.nuevoGV');
 //PARA GUARDAR
 Route::post('/GuardandoClienteGV',[ClientesController::class, 'storeGV'])->name('cliente.storeGV');
+
+//HOME USUARIOS GV
+Route::get('/Usuarios/Listado',[UsuariosSuperController::class, 'listadoUsuarios'])->name('homeUsuarios');
+//PARA CREAR
+Route::get('/nuevo',[UsuariosSuperController::class, 'nuevo'])->name('usuario.nuevo');
+//PARA GUARDAR
+Route::post('/GuardandoUsuario',[UsuariosSuperController::class, 'store'])->name('usuario.store');
+//BUSCAR USUARIO
+Route::post('/UsuarioBuscar',[UsuariosSuperController::class, 'search'])->name('usuario.search');
+//VER DETALLES USUARIO
+Route::get('/UsuarioDetalles/{id_usuario}',[UsuariosSuperController::class, 'detallesUsuario'])->name('detallesUsuario');
+//EDITAR
+Route::get('/UsuarioEditar/{id_usuario}',[UsuariosSuperController::class, 'borrar'])->name('borrarUsuario');
+
 
 
 //CLIENTES
@@ -170,16 +160,38 @@ Route::get('/ExpedienteDetalles/{id_expediente}',[ExpedientesSuperController::cl
 Route::match(['get', 'post'], '/ExpedienteSolicitar/{id_expediente}', [ExpedientesSuperController::class, 'solicitar'])->name('solicitarExpediente');
 //GUARDAR PRESTAMO
 Route::post('/almacenar-actividad', [ExpedientesSuperController::class, 'almacenarActividad'])->name('almacenarActividad');
+//EDITAR EXPEDIENTE
+Route::get('/EditarExp/{id_expediente}',[ExpedientesSuperController::class, 'editarExp'])->name('editarExp');
+//ACTUALIZAR DATOS EXPEDIENTE
+Route::put('/actualizarExp/{id_expediente}', [ExpedientesSuperController::class, 'actualizarExp'])->name('actualizarExp');
 
-//HOME USUARIOS
-Route::get('/Usuarios/Listado',[UsuariosSuperController::class, 'listadoUsuarios'])->name('homeUsuarios');
-//PARA CREAR
-Route::get('/nuevo',[UsuariosSuperController::class, 'nuevo'])->name('usuario.nuevo');
-//PARA GUARDAR
-Route::post('/GuardandoUsuario',[UsuariosSuperController::class, 'store'])->name('usuario.store');
-//BUSCAR USUARIO
-Route::post('/UsuarioBuscar',[UsuariosSuperController::class, 'search'])->name('usuario.search');
-//VER DETALLES USUARIO
-Route::get('/UsuarioDetalles/{id_usuario}',[UsuariosSuperController::class, 'detallesUsuario'])->name('detallesUsuario');
-//EDITAR
-Route::get('/UsuarioEditar/{id_usuario}',[UsuariosSuperController::class, 'borrar'])->name('borrarUsuario');
+
+Route::get('/ReporteGeneralSU',[reportesController::class, 'homeReportesSuper'])->name('homeReportesUno');
+Route::get('/ReporteDocumentoSU',[reportesController::class, 'homeDocumentoSuper'])->name('homeReportesDos');
+Route::get('/ReporteUsuarioSU',[reportesController::class, 'homeUsuarioSuper'])->name('homeReportesTres');
+Route::get('/ReporteAtrasosSU',[reportesController::class, 'homeAtrasosSuper'])->name('homeReportesCuatro');
+
+Route::post('/ExpedienteGeneralSU', [reportesController::class, 'ejecutarExpedienteGeneralSU'])->name('ejecutarExpedienteGeneralSU');
+Route::post('/ExpedienteDocumentoSU', [reportesController::class, 'ejecutarExpedienteDocumentoSU'])->name('ejecutarExpedienteDocumentoSU');
+Route::post('/ExpedienteUsuarioSU', [reportesController::class, 'ejecutarExpedienteUsuarioSU'])->name('ejecutarExpedienteUsuarioSU');
+Route::post('/ExpedienteAtrasosSU', [reportesController::class, 'ejecutarExpedienteAtrasosSU'])->name('ejecutarExpedienteAtrasosSU');
+
+Route::get('/exportar-expedientes', [reportesController::class, 'exportarExpedientes'])->name('exportarExpedientes');
+Route::get('/exportarExpedientesR2', [reportesController::class, 'exportarExpedientesR2'])->name('exportarExpedientesR2');
+Route::get('/exportarExpedientesR3', [reportesController::class, 'exportarExpedientesR3'])->name('exportarExpedientesR3');
+Route::get('/exportarExpedientesR4', [reportesController::class, 'exportarExpedientesR4'])->name('exportarExpedientesR4');
+
+//REPORTE UNO, GUARDAVALORES MOVIMIENTOS 
+Route::get('/ReporteGeneralGV',[reportesController::class, 'homeReportesGV'])->name('homeReportesUnoGV');
+Route::post('/ExpedienteGeneralGV', [reportesController::class, 'ejecutarExpedienteGeneralGV'])->name('ejecutarExpedienteGeneralGV');
+Route::get('/exportar-expedientesGV', [reportesController::class, 'exportarExpedientesGV'])->name('exportarExpedientesGV');
+
+//REPORTE DOS, POR DOCUMENTO
+Route::get('/ReporteDocumentoGV',[reportesController::class, 'ReportesDocumentoGV'])->name('ReporteDocumentoGV');
+Route::post('/ExpedienteDocumentoalGV', [reportesController::class, 'ejecutarDocumentoGV'])->name('ejecutarDocumentoGV');
+Route::get('/exportarDocumentoGV', [reportesController::class, 'exportarDocumentoGV'])->name('exportarDocumentoGV');
+
+//REPORTE TRES, POR USUARIO AUN SIN DESARROLLAR
+Route::get('/ReporteUsuarioGV',[reportesController::class, 'ReportesUsuarioGV'])->name('ReporteUsuarioGV');
+Route::post('/EjecucionUsuarioGV', [reportesController::class, 'ejecutarUsuarioGV'])->name('ejecutarUsuarioGV');
+Route::get('/exportarUsuarioGV', [reportesController::class, 'exportarUsuarioGV'])->name('exportarUsuarioGV');

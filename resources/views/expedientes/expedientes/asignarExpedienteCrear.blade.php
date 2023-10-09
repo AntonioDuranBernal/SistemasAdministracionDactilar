@@ -15,11 +15,7 @@
       <!-- Campo oculto para enviar el ID del cliente -->
       <input type="hidden" name="id_ciente" value="{{ $cliente->id_cliente}}">
       
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreCliente">
-          {{$cliente->nombre}} ({{$cliente->id_cliente}})
-        </label>
-      </div>
+
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreDocumento">
           Nombre de Expediente

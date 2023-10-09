@@ -10,15 +10,8 @@ use Illuminate\Support\Facades\DB;
 class UsuariosSuperController extends Controller
 {
 
-    public function volverHomeSegunArea() {
-        $idUser = 1;
-        $area = DB::table('users')->where('idUsuarioSistema', $idUser)->value('area');
-
-        if($area==1){
-            return redirect()->route('expedientesBasico',$idUser);
-        }else{
-            return redirect()->route('expedientesGV',$idUser);
-        }
+    public function __construct(){
+        $this->middleware('auth');
     }
 
     public function listadoUsuarios() {
@@ -55,15 +48,13 @@ class UsuariosSuperController extends Controller
         $apellidos = $request->input('apellidos');
         $rol = $request->input('rol');
         $otros_datos = $request->input('otros_datos');
-    
-       // Obtén los valores de los permisos del formulario como un array
         $permisos = $request->input('permisos', []);
 
         // Define los nombres de los permisos
         $permisosNombres = [
-    'expediente_registrar',
-    'expediente_consultar',
-    'expediente_editar',
+        'expediente_registrar',
+        'expediente_consultar',
+        'expediente_editar',
     'expediente_eliminar',
     'expediente_reportes',
     'guardavalor_registrar',
@@ -73,19 +64,19 @@ class UsuariosSuperController extends Controller
     'guardavalor_reportes',
         ];
 
-// Inicializa un array para almacenar los valores de los permisos
-$valoresPermisos = [];
+    // Inicializa un array para almacenar los valores de los permisos
+    $valoresPermisos = [];
 
-// Itera sobre los nombres de los permisos y verifica si están presentes en el array de permisos
-foreach ($permisosNombres as $permisoNombre) {
+    // Itera sobre los nombres de los permisos y verifica si están presentes en el array de permisos
+    foreach ($permisosNombres as $permisoNombre) {
     $valoresPermisos[$permisoNombre] = in_array($permisoNombre, $permisos);
-}
+    }
 
    // Inserta el usuario en la tabla 'usuarioSistema' con los permisos
    $ultimoInsertado = DB::table('users')->insertGetId([
     'nombre' => $nombre,
     'apellidos' => $apellidos,
-    'registroHuellaDigital' => 12345,
+    'registroHuellaDigital' => app('hash')->make($otros_datos),
     'otros_datos' => $otros_datos,
     'rol' => $rol,
     'registrarExpediente' => $valoresPermisos['expediente_registrar'],
@@ -102,18 +93,43 @@ foreach ($permisosNombres as $permisoNombre) {
     'password'=> app('hash')->make($otros_datos),
    ]);
 
-   // Redirige a la página de inicio de usuarios
+   DB::table('users')->where('idUsuarioSistema', $ultimoInsertado)->update(['id' => $ultimoInsertado]);
+   DB::table('users')->where('idUsuarioSistema', $ultimoInsertado)->update(['email' => $ultimoInsertado]);
+
+
    return redirect()->route('homeUsuarios');
 
-    }
+}
     
+
+
+
+
+
+
+
+
+
+
+    public function volverHomeSegunArea() {
+        $idUser = 1;
+        $area = DB::table('users')->where('idUsuarioSistema', $idUser)->value('area');
+
+        if($area==1){
+            return redirect()->route('expedientesBasico',$idUser);
+        }else{
+            return redirect()->route('expedientesGV',$idUser);
+        }
+    }
+
+
+
     
     public function search(Request $request){
 
         $query = $request->input('usuario');
     
         if (is_numeric($query)) {
-            // Si la entrada es un número, busca por ID
             $usuarios = DB::table('users')->where('idUsuarioSistema', $query)->get();
         } else {
             // Si la entrada no es un número, busca por nombre o apellidos
@@ -122,7 +138,6 @@ foreach ($permisosNombres as $permisoNombre) {
                                 ->get();
         }
         if ($usuarios->isEmpty()) {
-            // Si no se encontraron coincidencias, obtén todos los registros
             $usuarios = DB::table('users')->get();
             $mensaje = "No se encontraron coincidencias. Mostrando todos los registros.";
         }

@@ -18,13 +18,13 @@
             <label class="block text-gray-700 text-sm font-bold mb-2" for="nombre">
                 Nombre(s)
             </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="nombre" type="text" name="nombre" placeholder="Nombre(s)">
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="nombre" type="text" name="nombre" placeholder="Nombre(s)" required>
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2" for="apellidos">
                 Apellidos
             </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="apellidos" type="text" name="apellidos" placeholder="Apellidos">
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="apellidos" type="text" name="apellidos" placeholder="Apellidos" required>
         </div>
     </div>
 
@@ -34,13 +34,13 @@
             <label class="block text-gray-700 text-sm font-bold mb-2" for="otros_datos">
                 Observaciones
             </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="otros_datos" type="text" name="otros_datos" placeholder="Observaciones">
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="otros_datos" type="text" name="otros_datos" placeholder="Observaciones" required>
         </div>
         <div>
             <label class="block text-gray-700 text-sm font-bold mb-2" for="rol">
                 Rol
             </label>
-            <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="rol" name="rol">
+            <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="rol" name="rol" required>
                 <option value="1">Usuario</option>
                 <option value="2">Administrador</option>
                 <!--<option value="3">Super Administrador</option>-->

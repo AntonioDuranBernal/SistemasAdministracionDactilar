@@ -5,7 +5,6 @@ namespace App\Http\Controllers\guardavalores;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-//use Illuminate\Support\Facades\Auth;
 use Auth;
 use Carbon\Carbon;
 
@@ -16,6 +15,144 @@ class GuardavaloresController extends Controller
     public function __construct(){
         $this->middleware('auth');
     }
+
+    public function editarGV($id){
+        $gv = DB::table('guardavalores')->where('id_documento',$id)->first();
+        
+        // Verifica si se encontró el expediente
+        if (!$gv) {
+            return redirect()->route('homeAdminGuardavalores')->with('error', 'Documento no encontrado');
+        }
+    
+        //Filtrar los campos no vacíos
+        $nonEmptyFields = [];
+        foreach ($gv as $key => $value) {
+            if (!empty($value)) {
+                $nonEmptyFields[$key] = $value;
+            }
+        }
+    
+        return view('guardavalores.guardavalores.editarGV', ['gv'=>$gv]);
+    }    
+
+    public function actualizarGV(Request $request, $id)
+    {
+        // Valida los datos del formulario
+        $request->validate([
+            'nombre' => 'required',
+            'tipo_credito' => 'required',
+        ]);
+    
+        // Obtén todos los datos del formulario
+        $nombre = $request->input('nombre');
+        $numeroContrato = $request->input('numero_contrato');
+        $numeroPagare = $request->input('numero_pagare');
+        $descripcion = $request->input('descripcion');
+        $folioReal = $request->input('folio_real');
+        $otrosDatos = $request->input('otros_datos');
+        $funcionario = $request->input('funcionario');
+        $monto = $request->input('monto');
+        $tipoCredito = $request->input('tipo_credito');
+    
+        // Crea un array con los campos que no están vacíos o nulos
+        $datosActualizados = [
+            'nombre' => $nombre,
+            'tipo_credito' => $tipoCredito, // Asumiendo que 'tipo_gv' es equivalente a 'tipo_credito'
+        ];
+    
+        // Agrega otros campos que quieras actualizar aquí, por ejemplo:
+        if (!is_null($numeroContrato) && $numeroContrato !== '') {
+            $datosActualizados['numero_contrato'] = $numeroContrato;
+        }
+    
+        if (!is_null($numeroPagare) && $numeroPagare !== '') {
+            $datosActualizados['numero_pagare'] = $numeroPagare;
+        }
+    
+        if (!is_null($descripcion) && $descripcion !== '') {
+            $datosActualizados['descripcion'] = $descripcion;
+        }
+    
+        if (!is_null($folioReal) && $folioReal !== '') {
+            $datosActualizados['folio_real'] = $folioReal;
+        }
+    
+        if (!is_null($otrosDatos) && $otrosDatos !== '') {
+            $datosActualizados['otros_datos'] = $otrosDatos;
+        }
+    
+        if (!is_null($funcionario) && $funcionario !== '') {
+            $datosActualizados['funcionario'] = $funcionario;
+        }
+    
+        if (!is_null($monto) && $monto !== '') {
+            $datosActualizados['monto'] = $monto;
+        }
+    
+        // Actualiza los datos del guardavalor si hay campos para actualizar
+        if (!empty($datosActualizados)) {
+            DB::table('guardavalores')
+                ->where('id_documento', $id)
+                ->update($datosActualizados);
+        }
+    
+        return redirect()->route('homeAdminGuardavalores')->with('success', 'Guardavalor actualizado correctamente');
+    }
+    
+
+    public function homeAdminGuardavalores(){
+
+        $user = DB::table('users')
+        ->where('idUsuarioSistema', auth()->id())->first();
+        $idUser = $user->id;
+        $idRol = $user->rol;
+
+        echo 'EL ID DEL USUARIO ES: '.$idUser. 'CON EL ROL'. $idRol.' EN GUARDAVALOREES CONTROLLER';
+
+        $consulta = DB::table('users')
+        ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
+        ->where('idUsuarioSistema', $idUser)
+        ->first();
+    
+        $permisos = (array) $consulta;
+        $permisosUsuario = [];
+    
+        foreach ($permisos as $indice => $valor) {
+        $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
+        }
+
+        $elementos = DB::table('actividad_guardavalores')->get();
+        $elementosActualizados = [];
+    
+        foreach ($elementos as $elemento) {
+            $nombreContrato = DB::table('guardavalores')
+                ->where('id_documento', $elemento->id_documento)
+                ->value('nombre');
+    
+            $nombreUsuario = DB::table('users')
+                ->where('idUsuarioSistema', $elemento->id_usuario)
+                ->value('nombre');
+    
+            // Obtener los datos originales del elemento
+            $elementoOriginal = (array) $elemento;
+    
+            // Formatear las fechas en día, mes y año
+            $elementoOriginal['fecha_ingreso'] = date('d-m-Y', strtotime($elemento->fecha_ingreso));
+            $elementoOriginal['fecha_retiro'] = date('d-m-Y', strtotime($elemento->fecha_retiro));
+            $elementoOriginal['fecha_actividad'] = date('d-m-Y', strtotime($elemento->fecha_actividad));
+
+            // Actualizar los campos necesarios
+            $elementoOriginal['id_documento'] = $nombreContrato;
+            $elementoOriginal['id_usuario'] = $nombreUsuario;
+            
+            $elementosActualizados[] = (object) $elementoOriginal;
+        }
+
+        return view('guardavalores.home', ['idRol' => $idRol, 'elementos' => $elementosActualizados, 'listadoPermisos' => $permisosUsuario]);
+    
+    }
+
+    
 
     public function buscarGV(Request $request) {
         $id_gv = $request->input('id_gv');
@@ -125,7 +262,8 @@ class GuardavaloresController extends Controller
             'tipo_gv' => 'Pagare',
             'id_cliente' =>  $request->id_cliente,
             'usuario_creador' => $usuario_creador,
-            'fecha_creacion' => $fecha_creacion
+            'fecha_creacion' => $fecha_creacion,
+            'monto' => $validatedData['monto']
         ]);
 
         DB::table('actividad_guardavalores')->insert([
@@ -229,83 +367,6 @@ class GuardavaloresController extends Controller
 
         return redirect()->route('homeClientesGV')->with('success', 'Documento asignado correctamente');
 
-    }
-
-    public function homeAdminGuardavalores(){
-
-        //$usuario = Auth::user();
-        //$idUser = $usuario->idUsuarioSistema;
-        //$idUser = auth()->user()->idUsuarioSistema;
-
-        $idUser = DB::table('users')
-        ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
-        ->value('idUsuarioSistema');
-
-        $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
-
-        $idRol = $user->rol;
-
-        echo 'EL ID DEL USUARIO ES: '.$idUser. 'CON EL ROL'. $idRol.' EN GUARDAVALORES CONTROLLER';
-
-        $consulta = DB::table('users')
-        ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
-        ->where('idUsuarioSistema', $idUser)
-        ->first();
-    
-        $permisos = (array) $consulta;
-        $permisosUsuario = [];
-    
-        foreach ($permisos as $indice => $valor) {
-        $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
-        }
-
-        $elementos = DB::table('actividad_guardavalores')->get();
-        $elementosActualizados = [];
-    
-        foreach ($elementos as $elemento) {
-            $nombreContrato = DB::table('guardavalores')
-                ->where('id_documento', $elemento->id_documento)
-                ->value('nombre');
-    
-            $nombreUsuario = DB::table('users')
-                ->where('idUsuarioSistema', $elemento->id_usuario)
-                ->value('nombre');
-    
-            // Obtener los datos originales del elemento
-            $elementoOriginal = (array) $elemento;
-    
-            // Formatear las fechas en día, mes y año
-            $elementoOriginal['fecha_ingreso'] = date('d-m-Y', strtotime($elemento->fecha_ingreso));
-            $elementoOriginal['fecha_retiro'] = date('d-m-Y', strtotime($elemento->fecha_retiro));
-            $elementoOriginal['fecha_actividad'] = date('d-m-Y', strtotime($elemento->fecha_actividad));
-
-            // Actualizar los campos necesarios
-            $elementoOriginal['id_documento'] = $nombreContrato;
-            $elementoOriginal['id_usuario'] = $nombreUsuario;
-
-            /*
-            // Verificar y actualizar el estado si es necesario
-            if ($elementoOriginal['estado'] == 'En uso' && strtotime($elemento->fecha_devolucion) < strtotime(date('Y-m-d H:i:s'))) {
-            // Actualizar el estado a 'Devolución atrasada'
-            DB::table('actividad_expedientes')
-                ->where('id_actividad', $elemento->id_actividad)
-                ->update(['estado' => 'Devolución atrasada']);
-
-            DB::table('expedientes')
-                ->where('id_expediente',$elemento->id_expediente)
-                ->update(['estado' => 'Devolución atrasada']);
-
-            // Actualizar el estado en el elemento original
-            $elementoOriginal['estado'] = 'Devolución atrasada';
-            }
-            */
-            // Agregar el registro actualizado al arreglo
-            
-            $elementosActualizados[] = (object) $elementoOriginal;
-        }
-
-        return view('guardavalores.home', ['idRol' => $idRol, 'elementos' => $elementosActualizados, 'listadoPermisos' => $permisosUsuario]);
-    
     }
 
     public function retirarGV($id_d) {

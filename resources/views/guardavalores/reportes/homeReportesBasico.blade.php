@@ -33,100 +33,99 @@
 
 <div class="w-full flex justify-center">
     <div class="w-full sm:w-4/5 md:w-4/5 lg:w-7/8 p-4 mb-1">
-
-
-
     {{-- Esta es la fila con 3 elementos --}}
 <div class="grid grid-cols-12 gap-4">
   
 <div class="col-span-2 flex-grow flex-shrink p-6">
-    <a href="{{ route('homeAdminExpedientes') }}">
+    <a href="{{ route('homeAdminGuardavalores') }}">
         <button class="w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-4">Volver</button>
     </a>
 </div>
 
 <div class="col-span-10 h-[100px] p-3"> <!-- Quita la clase bg-gray-200 y aplica una altura fija -->
     <br>
-    <h1 class="text-2xl font-bold mb-4 text-center">REPORTE DE MOVIMIENTOS DE EXPEDIENTES</h1>
+    <h1 class="text-2xl font-bold mb-4 text-center">REPORTE DE MOVIMIENTOS GUARDAVALORES</h1>
     </div>
 </div>
 
 
-<form action="{{ route('ejecutarExpedienteGeneralSU') }}" method="POST" class="mb-4">
+<form action="{{ route('ejecutarExpedienteGeneralGV') }}" method="POST" class="mb-4">
     @csrf
     <input type="hidden" name="elementos" value="{{ json_encode($elementos) }}">
 
         <div class="flex gap-4">
             <div class="w-1/2">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_inicio">
-            Fecha Inicio:
-            </label>
-            <input type="date" id="fecha_inicio" name="fecha_inicio"  class="w-full p-2 border border-gray-300 rounded">
-            </div>
+    Fecha Inicio:
+  </label>
+  <input type="date" id="fecha_inicio" name="fecha_inicio" class="w-full p-2 border border-gray-300 rounded">
+</div>
             <div class="w-1/2">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_fin">
-        Fecha Fin:
-        </label>
-        <input type="date" id="fecha_fin" name="fecha_fin" class="w-full p-2 border border-gray-300 rounded">
-        </div>
+    Fecha Fin:
+  </label>
+  <input type="date" id="fecha_fin" name="fecha_fin"  class="w-full p-2 border border-gray-300 rounded">
+ </div>
         </div>
         <div class="flex justify-center gap-4">
             <button type="submit" class="mt-5 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg text-sm py-2 px-4">Ejecutar</button>
             
 
+            
             @if(count($elementos) > 0)
-            <a href="{{ route('exportarExpedientes', ['elementos' => $elementos]) }}" class="mt-5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
+            <a href="{{ route('exportarExpedientesGV', ['elementos' => $elementos]) }}" class="mt-5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
     @else
-    <a class="mt-5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
+        <a class="mt-5 bg-blue-500 text-white font-medium rounded-lg text-sm py-2 px-4 cursor-not-allowed opacity-50">Exportar</a>
     @endif
-        
+
+
         </div>
-        <br>
+<br>
                     @if(count($elementos) > 0)
             <div class="custom-scroll">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">
-                            Nombre de Expediente
+                            Número de Documento
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Usuario Solicitud
+                            Nombre de Guardavalor
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Motivo <br> de prestamo
+                            Usuario que realiza
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Fecha Solicitud
+                            Motivo
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Fecha Devolucion
+                            Fecha
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Disponibilidad
+                            Movimiento
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($elementos as $elemento)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                           {{$elemento->id_expediente}}
+                    <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                           {{$elemento->id_documento}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->id_usuario_solicita}}
+                           {{$elemento->estado}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {{$elemento->id_usuario}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->motivo}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->fecha_solicitud}}
+                            {{$elemento->fecha_actividad}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->fecha_devolucion}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->estado}}
+                            {{$elemento->movimiento}}
                         </td>
                     </tr>
                     @endforeach
@@ -134,11 +133,10 @@
             </table>
         </div>
         @else
-         <img src="imagenes/los_alamos_sinfondo.png" alt="Sin registros" class="mx-auto mt-8">
-      @endif
- 
-      </form>
+        <img src="imagenes/los_alamos_sinfondo.png" alt="Sin registros" class="mx-auto mt-8">
 
+      @endif
+      </form>
 </div>
 </div>
 

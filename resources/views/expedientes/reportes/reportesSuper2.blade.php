@@ -69,8 +69,13 @@
         <div class="flex justify-center gap-4">
             <button type="submit" class="mt-5 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg text-sm py-2 px-4">Ejecutar</button>
             
-            <a href="{{ route('exportarExpedientesR2', ['elementos' => $elementos]) }}" class="mt-5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
 
+            
+            @if(count($elementos) > 0)
+            <a href="{{ route('exportarExpedientesR2', ['elementos' => $elementos]) }}" class="mt-5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
+    @else
+    <a class="mt-5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
+    @endif
         </div>
         <br>
                     @if(count($elementos) > 0)

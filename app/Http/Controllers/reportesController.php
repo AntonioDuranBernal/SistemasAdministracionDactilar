@@ -116,6 +116,41 @@ class reportesController extends Controller
        ]);
     }
 
+    public function exportarExpedientesGV(Request $request)
+    {
+        $elementos = $request->input('elementos');
+
+        $archivo = public_path('exports/reporteGeneral_formatoGV.xlsx');
+        $spreadsheet = IOFactory::load($archivo);
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Reporte General GV');     
+
+                // Llenar el archivo Excel con los datos del arreglo
+                $row = 7;
+                foreach ($elementos as $elemento) {
+                    $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
+                    $sheet->setCellValue('B' . $row, $elemento['id_documento']);
+                    $sheet->setCellValue('C' . $row, $elemento['estado']);
+                    $sheet->setCellValue('D' . $row, $elemento['id_usuario']);
+                    $sheet->setCellValue('E' . $row, $motivo);
+                    $sheet->setCellValue('F' . $row, $elemento['fecha_actividad']);
+                    $sheet->setCellValue('G' . $row, $elemento['movimiento']);
+                    $row++;
+                }
+        
+                // Crear el archivo Excel
+                $writer = new Xlsx($spreadsheet);
+        
+                // Configurar las cabeceras para la descarga
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment;filename="Actividad_Guardavalores.xlsx"');
+                header('Cache-Control: max-age=0');
+        
+                // Enviar el archivo al cliente
+                $writer->save('php://output');
+        
+    }
+
     public function exportarExpedientes(Request $request)
     {
         $elementos = $request->input('elementos');
@@ -150,6 +185,41 @@ class reportesController extends Controller
         $writer->save('php://output');
 
     }
+
+    public function exportarDocumentoGV(Request $request)
+    {
+        $elementos = $request->input('elementos');
+        $archivos = public_path('exports/documento_formatoGV.xlsx');
+        $spreadsheet = IOFactory::load($archivos);
+        $sheet = $spreadsheet->getActiveSheet(); 
+        $sheet->setTitle('Documento'); 
+
+                        // Llenar el archivo Excel con los datos del arreglo
+                        $row = 7;
+                        foreach ($elementos as $elemento) {
+                            $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
+        
+                            $sheet->setCellValue('C' . $row, $elemento['estado']); 
+                            $sheet->setCellValue('D' . $row, $elemento['id_usuario']);
+                            $sheet->setCellValue('E' . $row, $elemento['movimiento']);
+                            $sheet->setCellValue('F' . $row, $motivo);
+                            $sheet->setCellValue('G' . $row, $elemento['fecha_actividad']);
+                            $row++;
+                        }
+        
+                                // Crear el archivo Excel
+                $writer = new Xlsx($spreadsheet);
+        
+                // Configurar las cabeceras para la descarga
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment;filename="documento.xlsx"');
+                header('Cache-Control: max-age=0');
+        
+                // Enviar el archivo al cliente
+                $writer->save('php://output');
+    
+    }
+    
 
     public function exportarExpedientesR3(Request $request)
     {
@@ -188,6 +258,43 @@ class reportesController extends Controller
     
     }
     
+    public function exportarUsuarioGV(Request $request)
+    {
+        $elementos = $request->input('elementos');
+        //$id_documento = $request->input('id_documento');
+
+        $archivos = public_path('exports/Usuario_formatoGV.xlsx');
+        $spreadsheet = IOFactory::load($archivos);
+        $sheet = $spreadsheet->getActiveSheet(); 
+        $sheet->setTitle('Documento'); 
+
+                // Llenar el archivo Excel con los datos del arreglo
+                $row = 7;
+                foreach ($elementos as $elemento) {
+                    $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
+
+                    $sheet->setCellValue('C' . $row, $elemento['id_documento']);
+                    $sheet->setCellValue('D' . $row, $elemento['estado']); 
+                    $sheet->setCellValue('E' . $row, $elemento['movimiento']);
+                    $sheet->setCellValue('F' . $row, $elemento['fecha_actividad']);
+                    $sheet->setCellValue('G' . $row, $motivo);
+                    $row++;
+                }
+        
+                // Crear el archivo Excel
+                $writer = new Xlsx($spreadsheet);
+        
+                // Configurar las cabeceras para la descarga
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment;filename="XUsuario.xlsx"');
+                header('Cache-Control: max-age=0');
+        
+                // Enviar el archivo al cliente
+                $writer->save('php://output');
+        
+            }
+    
+
 
     public function exportarExpedientesR2(Request $request)
     {
@@ -285,6 +392,114 @@ class reportesController extends Controller
 
     }
 
+    public function ejecutarDocumentoGV(Request $request){
+        $id_doc = $request->input('id_documento');
+        $registros = [];
+        $elementos = DB::table('actividad_guardavalores')
+        ->where('id_documento', $id_doc)
+        ->get();
+
+        if ($elementos->isEmpty()) {
+            $elementosActualizados = [];
+        } else {
+            $elementosActualizados = [];
+
+            foreach ($elementos as $elemento) {
+
+                /*$nombre = DB::table('guardavalores')
+                    ->where('id_documento', $elemento->id_documento)
+                    ->value('nombre');*/
+
+                $usuario = DB::table('users')
+                    ->where('idUsuarioSistema', $elemento->id_usuario)
+                    ->first();
+                
+                $nombreUsuario = $usuario->nombre . ' ' . $usuario->apellidos;
+                
+                    
+    
+                // Obtener los datos originales del elemento
+                $elementoOriginal = (array) $elemento;
+            
+                        // Formatear las fechas en día, mes y año
+                        $elementoOriginal['fecha_actividad'] = date('d-m-Y', strtotime($elemento->fecha_actividad));
+            
+                        // Actualizar los campos necesarios
+                        //$elementoOriginal['id_documento'] = $nombre;
+                        $elementoOriginal['estado'] = $nombreUsuario;
+            
+                        // Agregar el registro actualizado al arreglo
+                        $elementosActualizados[] = (object) $elementoOriginal;
+                    }
+            
+                    // Configurar los registros con los elementos actualizados
+                    $registros = $elementosActualizados;
+                   }
+
+                   $listaDocumentos = DB::table('guardavalores')
+                   ->get();
+        
+                   return view('guardavalores.reportes.reporteDocumento', [
+                    'elementos' => $elementosActualizados,
+                    'registros' => json_encode($registros),
+                    'listaDocumentos' => $listaDocumentos,
+                   ]);
+
+
+    }
+
+    public function ejecutarUsuarioGV(Request $request)
+    {
+        $id_usuario = $request->input('id_usuario');
+        $registros = [];
+        $elementos = DB::table('actividad_guardavalores')
+        ->where('id_usuario', $id_usuario)
+        ->get();
+
+        if ($elementos->isEmpty()) {
+            $elementosActualizados = [];
+        } else {
+            $elementosActualizados = [];
+    
+            foreach ($elementos as $elemento) {
+                $nombreExpediente = DB::table('guardavalores')
+                    ->where('id_documento', $elemento->id_documento)
+                    ->value('nombre');
+    
+                /*$nombreUsuario = DB::table('users')
+                    ->where('idUsuarioSistema', $elemento->id_usuario)
+                    ->value('nombre');*/
+    
+                // Obtener los datos originales del elemento
+                $elementoOriginal = (array) $elemento;
+
+                // Formatear las fechas en día, mes y año
+                $elementoOriginal['fecha_actividad'] = date('d-m-Y', strtotime($elemento->fecha_actividad));
+    
+                // Actualizar los campos necesarios
+                $elementoOriginal['estado'] = $nombreExpediente;
+                //$elementoOriginal['id_usuario'] = $nombreExpediente;
+    
+                // Agregar el registro actualizado al arreglo
+                $elementosActualizados[] = (object) $elementoOriginal;
+            }
+    
+            // Configurar los registros con los elementos actualizados
+            $registros = $elementosActualizados;
+           }
+
+           $listaClientes = DB::table('users')
+           ->get();
+
+           return view('guardavalores.reportes.ReportesUsuarioGV', [
+            'elementos' => $elementosActualizados,
+            'registros' => json_encode($registros),
+            'listaUsuarios' => $listaClientes,
+           ]);
+
+    }
+    
+
     public function ejecutarExpedienteUsuarioSU(Request $request)
     {
         $id_usuario = $request->input('id_usuario');
@@ -337,6 +552,56 @@ class reportesController extends Controller
 
     }
 
+    public function ejecutarExpedienteGeneralGV(Request $request)
+    {
+        $fecha_inicio = $request->input('fecha_inicio');
+        $fecha_fin = $request->input('fecha_fin');
+        $registros = [];
+        
+    $elementos = DB::table('actividad_guardavalores')
+    ->whereBetween('fecha_actividad', [$fecha_inicio, $fecha_fin])
+    ->get();
+
+        // Verifica si la consulta no devolvió resultados
+        if ($elementos->isEmpty()) {
+            $elementosActualizados = [];
+        } else {
+            $elementosActualizados = [];
+    
+            foreach ($elementos as $elemento) {
+                $nombreExpediente = DB::table('guardavalores')
+                    ->where('id_documento', $elemento->id_documento)
+                    ->value('nombre');
+    
+                $nombreUsuario = DB::table('users')
+                    ->where('idUsuarioSistema', $elemento->id_usuario)
+                    ->value('nombre');
+    
+                // Obtener los datos originales del elemento
+                $elementoOriginal = (array) $elemento;
+    
+                // Formatear las fechas en día, mes y año
+                $elementoOriginal['fecha_actividad'] = date('d-m-Y', strtotime($elemento->fecha_actividad));
+    
+                // Actualizar los campos necesarios
+                $elementoOriginal['estado'] = $nombreExpediente;
+                $elementoOriginal['id_usuario'] = $nombreUsuario;
+    
+                // Agregar el registro actualizado al arreglo
+                $elementosActualizados[] = (object) $elementoOriginal;
+            }
+    
+            // Configurar los registros con los elementos actualizados
+            $registros = $elementosActualizados;
+           }
+    
+            return view('guardavalores.reportes.homeReportesBasico', [
+            'elementos' => $elementosActualizados,
+            'registros' => json_encode($registros),
+           ]);
+
+        
+    }
     
     public function ejecutarExpedienteGeneralSU(Request $request)
     {
@@ -411,8 +676,27 @@ class reportesController extends Controller
     public function homeReportesBasico($id_u) {
         return view('expedientes.reportes.homeReportesBasico',['elementos' => [], 'id_usuario'=>$id_u]);
     }
-    
 
+    public function homeReportesGV() {
+        $user = DB::table('users')
+        ->where('idUsuarioSistema', auth()->id())->first();
+        $id_u = $user->id;
+        return view('guardavalores.reportes.homeReportesBasico',['elementos' => [], 'id_usuario'=>$id_u]);
+    }
+
+    public function ReportesDocumentoGV() {
+        $gv = DB::table('guardavalores')->get();
+        return view('guardavalores.reportes.reporteDocumento',['elementos' => [], 'listaDocumentos' => $gv]);
+    }
+
+    public function ReportesUsuarioGV() {
+        $gv = DB::table('users')->get();
+        return view('guardavalores.reportes.reportesUsuarioGV',['elementos' => [], 'listaUsuarios' => $gv]);
+    }
+
+    public function __construct(){
+        $this->middleware('auth');
+    }
 
 
 }

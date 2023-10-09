@@ -40,46 +40,50 @@
 <div class="grid grid-cols-12 gap-4">
   
 <div class="col-span-2 flex-grow flex-shrink p-6">
-    <a href="{{ route('homeAdminExpedientes') }}">
+<a href="{{ route('homeAdminGuardavalores') }}">
         <button class="w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-4">Volver</button>
     </a>
 </div>
 
 <div class="col-span-10 h-[100px] p-3"> <!-- Quita la clase bg-gray-200 y aplica una altura fija -->
     <br>
-    <h1 class="text-2xl font-bold mb-4 text-center">REPORTE DE MOVIMIENTOS DE EXPEDIENTES</h1>
+    <h1 class="text-2xl font-bold mb-4 text-center">REPORTE POR USUARIO</h1>
     </div>
 </div>
 
 
-<form action="{{ route('ejecutarExpedienteGeneralSU') }}" method="POST" class="mb-4">
+<form action="{{ route('ejecutarUsuarioGV') }}" method="POST" class="mb-4">
     @csrf
     <input type="hidden" name="elementos" value="{{ json_encode($elementos) }}">
 
-        <div class="flex gap-4">
-            <div class="w-1/2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_inicio">
-            Fecha Inicio:
-            </label>
-            <input type="date" id="fecha_inicio" name="fecha_inicio"  class="w-full p-2 border border-gray-300 rounded">
-            </div>
-            <div class="w-1/2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_fin">
-        Fecha Fin:
-        </label>
-        <input type="date" id="fecha_fin" name="fecha_fin" class="w-full p-2 border border-gray-300 rounded">
-        </div>
-        </div>
+
+    <div class="flex justify-center">
+    <div class="w-1/3">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="id_usuario">
+            Usuario
+        </label>                                                                                         
+    <select id="id_usuario" name="id_usuario" class="w-full p-2 border border-gray-300 rounded">
+    <option value="">Usuario</option>
+    @foreach ($listaUsuarios as $cliente)
+        <option value="{{ $cliente->idUsuarioSistema }}">{{ $cliente->idUsuarioSistema }} - {{ $cliente->nombre }} {{ $cliente->apellidos }}</option>
+    @endforeach
+    </select>                                       
+    </div>
+    </div>
+
+
         <div class="flex justify-center gap-4">
             <button type="submit" class="mt-5 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg text-sm py-2 px-4">Ejecutar</button>
             
 
             @if(count($elementos) > 0)
-            <a href="{{ route('exportarExpedientes', ['elementos' => $elementos]) }}" class="mt-5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
+        <a id="exportButton" href="{{ route('exportarUsuarioGV', ['elementos' => $elementos]) }}" class="mt-5 bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
     @else
-    <a class="mt-5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
+        <a id="exportButton" class="mt-5 bg-blue-500 text-white font-medium rounded-lg text-sm py-2 px-4 cursor-not-allowed opacity-50">Exportar</a>
     @endif
-        
+
+
+
         </div>
         <br>
                     @if(count($elementos) > 0)
@@ -88,22 +92,19 @@
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">
-                            Nombre de Expediente
+                            Número <br> de Documento
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Usuario Solicitud
+                            Nombre de Documento
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Motivo <br> de prestamo
+                            Motivo
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Fecha Solicitud
+                            Fecha
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Fecha Devolucion
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Disponibilidad
+                            Movimiento
                         </th>
                     </tr>
                 </thead>
@@ -111,22 +112,19 @@
                     @foreach($elementos as $elemento)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                           {{$elemento->id_expediente}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->id_usuario_solicita}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->motivo}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->fecha_solicitud}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->fecha_devolucion}}
+                           {{$elemento->id_documento}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->estado}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {{$elemento->movimiento}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {{$elemento->fecha_actividad}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {{$elemento->motivo}}
                         </td>
                     </tr>
                     @endforeach
@@ -141,18 +139,42 @@
 
 </div>
 </div>
-
-<script>
-function validateDate() {
-    var startDate = document.getElementById("fecha_inicio").value;
-    var endDate = document.getElementById("fecha_fin").value;
-    
-    if (startDate > endDate) {
-        alert("La fecha de fin debe ser igual o mayor que la fecha de inicio");
-        document.getElementById("fecha_fin").value = startDate;
-    }
-}
-</script>
-
 </body>
 </html>
+
+<script>
+    // Agregar un evento de cambio al campo de selección
+    document.getElementById('id_usuario').addEventListener('input', function() {
+        var input = this.value;
+        var options = document.querySelectorAll('#id_usuario option');
+        
+        // Mostrar todas las opciones por defecto
+        options.forEach(function(option) {
+            option.style.display = 'block';
+        });
+
+        if (input) {
+            // Determinar si la entrada es un número o texto
+            var isNumeric = !isNaN(input);
+
+            // Ocultar las opciones que no coinciden con la entrada del usuario
+            options.forEach(function(option) {
+                var idCliente = option.value;
+                var nombre = option.text;
+
+                if (isNumeric) {
+                    // Si la entrada es un número, comparar con el campo id_cliente
+                    if (idCliente.indexOf(input) === -1) {
+                        option.style.display = 'none';
+                    }
+                } else {
+                    // Si la entrada es texto, comparar con el campo nombre
+                    if (nombre.toLowerCase().indexOf(input.toLowerCase()) === -1) {
+                        option.style.display = 'none';
+                    }
+                }
+            });
+        }
+    });
+</script>
+

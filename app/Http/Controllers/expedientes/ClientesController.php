@@ -9,6 +9,35 @@ use Illuminate\Support\Facades\DB;
 
 class ClientesController extends Controller
 {
+    
+    public function __construct(){
+        $this->middleware('auth');
+    }
+
+    public function inicioClientesGV(){
+
+        $elementos = DB::table('clientes_guardavalores')
+        ->where('nombre', '!=', '')->get();
+
+        $user = DB::table('users')
+        ->where('idUsuarioSistema', auth()->id())->first();
+        $idUser = $user->id;
+        $idRol = $user->rol;
+
+        $consulta = DB::table('users')
+        ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
+        ->where('idUsuarioSistema', $idUser)
+        ->first();
+    
+        $permisos = (array) $consulta;
+        $permisosUsuario = [];
+    
+        foreach ($permisos as $indice => $valor) {
+        $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
+        }
+
+    return view('guardavalores.clientes.homeClientesGV', ['elementos' => $elementos, 'permisosUsuario' => $permisosUsuario]);
+    }
 
 
 
@@ -133,30 +162,6 @@ class ClientesController extends Controller
         return view('expedientes.clientes.homeClientesBasico', ['elementos' => $clientes,'permisosUsuario' => $permisosUsuario, 'usuario' => $user]);
 
     }
-
-    public function inicioClientesGV(){
-
-                        $elementos = DB::table('clientes_guardavalores')
-                        ->where('nombre', '!=', '') // Solo registros donde el nombre no está vacío
-                        ->get();
-
-                        $idUser = 1;
-
-                        $consulta = DB::table('users')
-                        ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
-                        ->where('idUsuarioSistema', $idUser)
-                        ->first();
-                    
-                        $permisos = (array) $consulta;
-                        $permisosUsuario = [];
-                    
-                        foreach ($permisos as $indice => $valor) {
-                        $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
-                        }
-        
-        return view('guardavalores.clientes.homeClientesGV', ['elementos' => $elementos, 'permisosUsuario' => $permisosUsuario]);
-    }
-
     
     public function inicioClientes(){
         $elementos = DB::table('clientes_expedientes')

@@ -62,10 +62,9 @@
         <div class="relative inline-block text-white">
             <select id="reportSelect" class="block mt-4 lg:inline-block lg:mt-0 bg-blue-500 text-white border border-white">
                 <option selected>Reportes</option>
-                <option value="{{ route('homeAdminGuardavalores') }}">Reporte 1</option>
-                <option value="{{ route('homeAdminGuardavalores') }}">Reporte 2</option>
-                <option value="{{ route('homeAdminGuardavalores') }}">Reporte 3</option>
-                <option value="{{ route('homeAdminGuardavalores') }}">Reporte 4</option>
+                <option value="{{ route('homeReportesUnoGV') }}">Reporte de Movimientos</option>
+                <option value="{{ route('ReporteDocumentoGV') }}">Reporte por Documento</option>
+                <option value="{{ route('ReporteUsuarioGV') }}">Reporte por Usuario</option>
             </select>
         </div>
         </div>
@@ -132,7 +131,7 @@
         </table>
       @else
         
-          <img src="imagenes/los_alamos_sinfondo.png" alt="Sin registros" class="mx-auto mt-8">
+          <img src="imagenes/los_alamos_sinfondo.png"  alt="Sin registros" class="mx-auto mt-8">
         
       @endif
     </div>

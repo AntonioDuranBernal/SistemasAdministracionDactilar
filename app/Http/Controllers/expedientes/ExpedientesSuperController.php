@@ -11,6 +11,34 @@ use Illuminate\Support\Facades\Auth;
 class ExpedientesSuperController extends Controller
 {
 
+    public function __construct(){
+        $this->middleware('auth');
+    }
+
+    public function actualizarExp(Request $request, $id_expediente)
+{
+    // Valida los datos del formulario
+    /*$request->validate([
+        'nombreDocumento' => 'required',
+        'descripcion' => 'required',
+        // Agrega más reglas de validación según tus necesidades
+    ]);*/
+
+    // Actualiza los datos del expediente utilizando consultas de SQL
+    DB::table('expedientes')
+        ->where('id_expediente', $id_expediente)
+        ->update([
+            'nombre' => $request->input('nombreDocumento'),
+            'descripcion' => $request->input('descripcion'),
+            'folio_real' => $request->input('folioReal'),
+            'otros_datos' => $request->input('otrosDatos'),
+        ]);
+
+    return redirect()->route('homeExpedientes')->with('success', 'Expediente actualizado correctamente');
+}
+
+
+    
     public function devolverExpediente($id_e,$id_u,$id_a){
 
                 // Actualizar el estado a 'Devolución atrasada'
@@ -24,6 +52,17 @@ class ExpedientesSuperController extends Controller
 
                     return redirect()->route('expedientesBasico',$id_u);
 
+    }
+
+    public function editarExp($id_expediente){
+    $expediente = DB::table('expedientes')->where('id_expediente',$id_expediente)->first();
+    
+    // Verifica si se encontró el expediente
+    if (!$expediente) {
+        return redirect()->route('homeExpedientes')->with('error', 'Expediente no encontrado');
+    }
+
+    return view('expedientes.expedientes.editarExpediente', compact('expediente'));
     }
 
     
@@ -192,8 +231,6 @@ class ExpedientesSuperController extends Controller
 
         return view('expedientes.super.homeSuper', ['elementos' => $elementosActualizados]);
     }
-
-
 
     public function listadoExpedientes() {
         $elementos = DB::table('expedientes')->get();
