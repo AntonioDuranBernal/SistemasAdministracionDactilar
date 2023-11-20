@@ -12,14 +12,30 @@ use Illuminate\Support\Facades\DB;
 class LoginController extends Controller
 {
 
+    
     public function __construct(){
         $this->middleware('auth',['except'=>['showLoginForm', 'attemptLogin']]);
     }
+    
 
     public function showLoginForm()
     {
         return view('login');
     }
+
+    public function logout(Request $request){
+
+    // Actualiza el campo "area" del usuario a 0
+    DB::table('users')
+    ->where('idUsuarioSistema', auth()->id())
+    ->update(['area' => 0]);
+
+    Auth::logout(); // Cierra la sesión del usuario
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return view('welcome');
+   }
 
     protected function attemptLogin(Request $request)
     {

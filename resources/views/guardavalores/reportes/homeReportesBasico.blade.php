@@ -87,13 +87,16 @@
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">
-                            Número de Documento
-                        </th>
-                        <th scope="col" class="px-6 py-3">
                             Nombre de Guardavalor
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Usuario que realiza
+                            Usuario que otorga
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Usuario que solicita
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Movimiento
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Motivo
@@ -101,17 +104,11 @@
                         <th scope="col" class="px-6 py-3">
                             Fecha
                         </th>
-                        <th scope="col" class="px-6 py-3">
-                            Movimiento
-                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($elementos as $elemento)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                           {{$elemento->id_documento}}
-                        </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                            {{$elemento->estado}}
                         </td>
@@ -119,13 +116,16 @@
                             {{$elemento->id_usuario}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                           {{$elemento->usuario_solicita}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {{$elemento->movimiento}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->motivo}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->fecha_actividad}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->movimiento}}
                         </td>
                     </tr>
                     @endforeach

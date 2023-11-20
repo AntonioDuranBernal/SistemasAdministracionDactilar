@@ -8,15 +8,16 @@
 </head>
 <body>
 <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4 text-center">Registar Expediente Cliente</h1>
-    <form class="bg-white border border-gray-300 shadow-lg rounded-md mx-auto max-w-lg px-8 pt-6 pb-8 mb-4" action="{{ route('cliente.store') }}" method="POST">
-    @csrf <!-- Agregar el token CSRF aquí -->
-  
+    <h1 class="text-2xl font-bold mb-4 text-center">EDICIÓN DE EXPEDIENTE {{$cliente->nombre}}</h1>
+    <form class="bg-white border border-gray-300 shadow-lg rounded-md mx-auto max-w-lg px-8 pt-6 pb-8 mb-4" action="{{ route('cliente.update', $cliente->id_cliente) }}" method="POST">
+    @csrf
+    @method('PUT') <!-- Utiliza el método PUT para actualización -->
+
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreDocumento">
-          Nombre Completo de Cliente
+          Nombre de Cliente
         </label>
-        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="nombre" type="text" name="nombre" placeholder="Nombre de Cliente" required>
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="nombre" type="text" name="nombre" value="{{ $cliente->nombre }}" required>
       </div>
 
       <div class="mb-4">
@@ -30,14 +31,14 @@
         <label class="block text-gray-700 text-sm font-bold mb-2" for="idClienteGiro">
           ID Cliente Giro
         </label>
-        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="idClienteGiro" type="text" name="idClienteGiro" placeholder="ID Cliente Giro" required>
+        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="idClienteGiro" type="text" name="idClienteGiro" placeholder="ID Cliente Giro">
       </div>
       
       <div class="flex items-center justify-end mt-4">
         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2" type="submit">
-          Guardar
+          Actualizar
         </button>
-        <a href="{{route('homeClientesSuper')}}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Cancelar</a>
+        <a href="{{ route('homeClientesSuper') }}" class="bg-red-500 hover-bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Cancelar</a>
       </div>
 
     </form>

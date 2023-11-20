@@ -18,16 +18,42 @@
 
     <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreCliente">
-          {{$cliente->nombre}} ({{$cliente->id_cliente}})
+          ACREDITADO: {{$cliente->nombre}} <br>
+          <!--Número de cliente: {{$cliente->id_cliente}}-->
         </label>
       </div>
 
     <div class="grid grid-cols-3 gap-4 mb-4">
+
+        <div class="col-span-1">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="numero_credito">
+                ID de Credito
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="numero_credito" type="text" name="numero_credito" placeholder="Número de credito" required>
+        </div>
+        <div class="col-span-1">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="numero_pagare">
+                Número de Pagare
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="numero_pagare" type="text" name="numero_pagare" placeholder="Número de pagare" required>
+        </div>
+
         <div class="col-span-1">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="numero_contrato">
                 Número de Contrato
             </label>
             <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="numero_contrato" type="text" name="numero_contrato" placeholder="Número de contrato" required>
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-3 gap-4 mb-4">
+
+        <div class="col-span-1">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="fechaEntrega">
+                Fecha de Entrega:
+            </label>
+            <input type="date" id="fechaEntrega" name="fechaEntrega" class="w-full p-2 border border-gray-300 rounded" required>
         </div>
         <div class="col-span-1">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="fechaTerminacion">
@@ -36,31 +62,25 @@
             <input type="date" id="fechaTerminacion" name="fechaTerminacion" class="w-full p-2 border border-gray-300 rounded" required>
         </div>
         <div class="col-span-1">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="numero_pagare">
-                Número de Pagare
-            </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="numero_pagare" type="text" name="numero_pagare" placeholder="Número de pagare" required>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-3 gap-4 mb-4">
-        <div class="col-span-1">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="monto">
                 Monto
             </label>
             <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="monto" type="text" name="monto" placeholder="Monto" required>
         </div>
-        <div class="col-span-1">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="fechaEntrega">
-                Fecha de Entrega:
-            </label>
-            <input type="date" id="fechaEntrega" name="fechaEntrega" class="w-full p-2 border border-gray-300 rounded" required>
-        </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4 mb-4">
         <div class="col-span-1">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="funcionario">
                 Funcionario
             </label>
             <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="funcionario" type="text" name="funcionario" placeholder="Funcionario" required>
+        </div>
+        <div class="col-span-2">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="observaciones">
+                Observaciones
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="observaciones" type="text" name="observaciones" placeholder="Observaciones">
         </div>
     </div>
 

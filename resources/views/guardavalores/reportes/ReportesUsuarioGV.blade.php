@@ -65,7 +65,7 @@
     <select id="id_usuario" name="id_usuario" class="w-full p-2 border border-gray-300 rounded">
     <option value="">Usuario</option>
     @foreach ($listaUsuarios as $cliente)
-        <option value="{{ $cliente->idUsuarioSistema }}">{{ $cliente->idUsuarioSistema }} - {{ $cliente->nombre }} {{ $cliente->apellidos }}</option>
+        <option value="{{ $cliente->idUsuarioSistema }}">{{ $cliente->nombre }} {{ $cliente->apellidos }}</option>
     @endforeach
     </select>                                       
     </div>
@@ -92,27 +92,28 @@
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">
-                            Número <br> de Documento
+                            Cliente
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Nombre de Documento
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Motivo
+                            Movimiento
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Fecha
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Movimiento
+                            Motivo
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($elementos as $elemento)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                           {{$elemento->id_documento}}
+
+                       <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {{$elemento->tipo_gv}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->estado}}

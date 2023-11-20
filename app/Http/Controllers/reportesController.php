@@ -10,45 +10,8 @@ use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 
-
 class reportesController extends Controller
-{    
-
-    public function exportarExpedientesR4(Request $request)
-    {
-        $elementos = $request->input('elementos');
-
-        $archivo = public_path('exports/reporteAtrasos_formato.xlsx');
-        $spreadsheet = IOFactory::load($archivo);
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Reporte Atrasos');        
-
-        // Llenar el archivo Excel con los datos del arreglo
-        $row = 7;
-        foreach ($elementos as $elemento) {
-            $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
-            $sheet->setCellValue('C' . $row, $elemento['id_expediente']);
-            $sheet->setCellValue('D' . $row, $elemento['id_usuario_otorga']);
-            $sheet->setCellValue('E' . $row, $elemento['id_usuario_solicita']);
-            $sheet->setCellValue('F' . $row, $motivo);
-            $sheet->setCellValue('G' . $row, $elemento['fecha_solicitud']);
-            $sheet->setCellValue('H' . $row, $elemento['fecha_devolucion']);
-            $sheet->setCellValue('I' . $row, $elemento['estado']);
-            $row++;
-        }
-
-        // Crear el archivo Excel
-        $writer = new Xlsx($spreadsheet);
-
-        // Configurar las cabeceras para la descarga
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="atrasosExpedientes.xlsx"');
-        header('Cache-Control: max-age=0');
-
-        // Enviar el archivo al cliente
-        $writer->save('php://output');
-
-    } 
+{   
 
     public function ejecutarExpedienteAtrasosSU(Request $request)
     {
@@ -83,20 +46,50 @@ class reportesController extends Controller
         $elementosActualizados = [];
 
         foreach ($elementos as $elemento) {
-            $nombreExpediente = DB::table('expedientes')
-                ->where('id_expediente', $elemento->id_expediente)
-                ->value('nombre');
+
+            $exp = DB::table('expedientes')
+            ->where('id_expediente', $elemento->id_expediente)
+            ->first();
+                
+            $nombreExpediente  = $exp->nombre;
+            $id_cli = $exp->id_cliente;
 
             $nombreUsuario = DB::table('users')
                 ->where('idUsuarioSistema', $elemento->id_usuario_solicita)
                 ->value('nombre');
 
+                $Cliente = DB::table('clientes_expedientes')
+                    ->where('id_consecutivo', $id_cli)
+                    ->first();
+
             // Obtener los datos originales del elemento
             $elementoOriginal = (array) $elemento;
 
-            // Formatear las fechas en día, mes y año
-            $elementoOriginal['fecha_solicitud'] = date('d-m-Y', strtotime($elemento->fecha_solicitud));
-            $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
+            if ($Cliente) {
+                $nombreCliente = $Cliente->nombre;
+                $elementoOriginal['tomo'] = $nombreCliente;
+
+            } else {
+            echo "Cliente no encontrado.";
+            }
+
+            if (empty($elemento->fecha_entrega)) {
+                $elementoOriginal['fecha_entrega'] = null;
+            } else {
+                $elementoOriginal['fecha_entrega'] = date('d-m-Y', strtotime($elemento->fecha_entrega));
+            }
+            
+            if (empty($elemento->fecha_solicitud)) {
+                $elementoOriginal['fecha_solicitud'] = null;
+            } else {
+                $elementoOriginal['fecha_solicitud'] = date('d-m-Y', strtotime($elemento->fecha_solicitud));
+            }
+            
+            if (empty($elemento->fecha_devolucion)) {
+                $elementoOriginal['fecha_devolucion'] = null;
+            } else {
+                $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
+            }
 
             // Actualizar los campos necesarios
             $elementoOriginal['id_usuario_otorga'] = $nombreExpediente;
@@ -132,9 +125,9 @@ class reportesController extends Controller
                     $sheet->setCellValue('B' . $row, $elemento['id_documento']);
                     $sheet->setCellValue('C' . $row, $elemento['estado']);
                     $sheet->setCellValue('D' . $row, $elemento['id_usuario']);
-                    $sheet->setCellValue('E' . $row, $motivo);
-                    $sheet->setCellValue('F' . $row, $elemento['fecha_actividad']);
-                    $sheet->setCellValue('G' . $row, $elemento['movimiento']);
+                    $sheet->setCellValue('E' . $row, $elemento['movimiento']);
+                    $sheet->setCellValue('F' . $row, $motivo);
+                    $sheet->setCellValue('G' . $row, $elemento['fecha_actividad']);
                     $row++;
                 }
         
@@ -158,18 +151,26 @@ class reportesController extends Controller
         $archivo = public_path('exports/reporteGeneral_formato.xlsx');
         $spreadsheet = IOFactory::load($archivo);
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Reporte General');        
+        $sheet->setTitle('Reporte de movimientos'); 
 
         // Llenar el archivo Excel con los datos del arreglo
         $row = 7;
         foreach ($elementos as $elemento) {
-            $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
-            $sheet->setCellValue('C' . $row, $elemento['id_expediente']);
-            $sheet->setCellValue('D' . $row, $elemento['id_usuario_solicita']);
-            $sheet->setCellValue('E' . $row, $motivo);
-            $sheet->setCellValue('F' . $row, $elemento['fecha_solicitud']);
-            $sheet->setCellValue('G' . $row, $elemento['fecha_devolucion']);
-            $sheet->setCellValue('H' . $row, $elemento['estado']);
+
+            $movimiento= isset($elemento['Movimiento']) ? $elemento['Movimiento'] : ' - - - ';
+            $id_usuario_solicita = isset($elemento['id_usuario_solicita']) ? $elemento['id_usuario_solicita'] : ' - - - ';
+            $fecha_solicitud = isset($elemento['fecha_solicitud']) ? $elemento['fecha_solicitud'] : ' - - - ';
+            $fecha_devolucion = isset($elemento['fecha_devolucion']) ? $elemento['fecha_devolucion'] : ' - - - ';
+            $fecha_entrega = isset($elemento['fecha_entrega']) ? $elemento['fecha_entrega'] : ' - - - ';
+
+            $sheet->setCellValue('C' . $row, $elemento['tomo']);
+            $sheet->setCellValue('D' . $row, $elemento['id_usuario_otorga']);
+            $sheet->setCellValue('E' . $row, $movimiento);
+            $sheet->setCellValue('F' . $row, $id_usuario_solicita);
+            $sheet->setCellValue('G' . $row, $fecha_solicitud);
+            $sheet->setCellValue('H' . $row, $fecha_devolucion);
+            $sheet->setCellValue('I' . $row, $fecha_entrega);
+            $sheet->setCellValue('J' . $row, $elemento['estado']);
             $row++;
         }
 
@@ -178,7 +179,7 @@ class reportesController extends Controller
 
         // Configurar las cabeceras para la descarga
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="expedientes.xlsx"');
+        header('Content-Disposition: attachment;filename="MovimientosExpedientes.xlsx"');
         header('Cache-Control: max-age=0');
 
         // Enviar el archivo al cliente
@@ -186,9 +187,10 @@ class reportesController extends Controller
 
     }
 
-    public function exportarDocumentoGV(Request $request)
+    public function exportarDocumentoGV2(Request $request)
     {
         $elementos = $request->input('elementos');
+
         $archivos = public_path('exports/documento_formatoGV.xlsx');
         $spreadsheet = IOFactory::load($archivos);
         $sheet = $spreadsheet->getActiveSheet(); 
@@ -212,13 +214,52 @@ class reportesController extends Controller
         
                 // Configurar las cabeceras para la descarga
                 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                header('Content-Disposition: attachment;filename="documento.xlsx"');
+                header('Content-Disposition: attachment;filename="ReporteDocumento.xlsx"');
                 header('Cache-Control: max-age=0');
         
                 // Enviar el archivo al cliente
                 $writer->save('php://output');
     
     }
+
+    public function exportarDocumentoGV(Request $request){
+        
+    $elementos = $request->input('elementos');
+    dd($elementos);
+
+
+    if (is_array($elementos)) {
+        $archivos = public_path('exports/documento_formatoGV.xlsx');
+        $spreadsheet = IOFactory::load($archivos);
+        $sheet = $spreadsheet->getActiveSheet(); 
+        $sheet->setTitle('Documento'); 
+
+        // Llenar el archivo Excel con los datos del arreglo
+        $row = 7;
+        foreach ($elementos as $elemento) {
+            $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
+
+            $sheet->setCellValue('C' . $row, $elemento['estado']); 
+            $sheet->setCellValue('D' . $row, $elemento['id_usuario']);
+            $sheet->setCellValue('E' . $row, $elemento['movimiento']);
+            $sheet->setCellValue('F' . $row, $motivo);
+            $sheet->setCellValue('G' . $row, $elemento['fecha_actividad']);
+            $row++;
+        }
+
+        // Crear el archivo Excel
+        $writer = new Xlsx($spreadsheet);
+
+        // Configurar las cabeceras para la descarga
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="ReporteDocumento.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        // Enviar el archivo al cliente
+        $writer->save('php://output');
+    }
+}
+
     
 
     public function exportarExpedientesR3(Request $request)
@@ -234,13 +275,19 @@ class reportesController extends Controller
                 // Llenar el archivo Excel con los datos del arreglo
                 $row = 7;
                 foreach ($elementos as $elemento) {
-                    $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
 
-                    $sheet->setCellValue('C' . $row, $elemento['id_expediente']); 
-                    $sheet->setCellValue('D' . $row, $elemento['id_usuario_solicita']);
-                    $sheet->setCellValue('E' . $row, $motivo);
-                    $sheet->setCellValue('F' . $row, $elemento['fecha_solicitud']);
-                    $sheet->setCellValue('G' . $row, $elemento['fecha_devolucion']);
+                    
+            $movimiento= isset($elemento['Movimiento']) ? $elemento['Movimiento'] : ' - - - ';
+            $id_usuario_solicita = isset($elemento['id_usuario_solicita']) ? $elemento['id_usuario_solicita'] : ' - - - ';
+            $fecha_solicitud = isset($elemento['fecha_solicitud']) ? $elemento['fecha_solicitud'] : ' - - - ';
+            $fecha_devolucion = isset($elemento['fecha_devolucion']) ? $elemento['fecha_devolucion'] : ' - - - ';
+            $fecha_entrega = isset($elemento['fecha_entrega']) ? $elemento['fecha_entrega'] : ' - - - ';
+
+                    $sheet->setCellValue('C' . $row, $id_usuario_solicita);
+                    $sheet->setCellValue('D' . $row, $movimiento);
+                    $sheet->setCellValue('E' . $row, $fecha_solicitud);
+                    $sheet->setCellValue('F' . $row, $fecha_devolucion);
+                    $sheet->setCellValue('G' . $row, $fecha_entrega);
                     $sheet->setCellValue('H' . $row, $elemento['estado']);
                     $row++;
                 }
@@ -250,7 +297,7 @@ class reportesController extends Controller
 
         // Configurar las cabeceras para la descarga
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="documento.xlsx"');
+        header('Content-Disposition: attachment;filename="ReporteUsuario.xlsx"');
         header('Cache-Control: max-age=0');
 
         // Enviar el archivo al cliente
@@ -273,7 +320,7 @@ class reportesController extends Controller
                 foreach ($elementos as $elemento) {
                     $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
 
-                    $sheet->setCellValue('C' . $row, $elemento['id_documento']);
+                    $sheet->setCellValue('C' . $row, $elemento['tipo_gv']);
                     $sheet->setCellValue('D' . $row, $elemento['estado']); 
                     $sheet->setCellValue('E' . $row, $elemento['movimiento']);
                     $sheet->setCellValue('F' . $row, $elemento['fecha_actividad']);
@@ -286,22 +333,65 @@ class reportesController extends Controller
         
                 // Configurar las cabeceras para la descarga
                 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                header('Content-Disposition: attachment;filename="XUsuario.xlsx"');
+                header('Content-Disposition: attachment;filename="ReporteUsuario.xlsx"');
                 header('Cache-Control: max-age=0');
         
                 // Enviar el archivo al cliente
                 $writer->save('php://output');
         
             }
-    
 
+
+            public function exportarExpedientesR4(Request $request)
+            {
+                $elementos = $request->input('elementos');
+
+        $archivos = public_path('exports/reporteAtrasos_formato.xlsx');
+        $spreadsheet = IOFactory::load($archivos);
+        $sheet = $spreadsheet->getActiveSheet(); 
+        $sheet->setTitle('ReporteAtrasos');
+
+              // Llenar el archivo Excel con los datos del arreglo
+              $row = 7;
+              foreach ($elementos as $elemento) {
+
+                  $movimiento= isset($elemento['Movimiento']) ? $elemento['Movimiento'] : ' - - - ';
+                  
+                  $id_usuario_solicita = isset($elemento['id_usuario_solicita']) ? $elemento['id_usuario_solicita'] : ' - - - ';
+                  $fecha_solicitud = isset($elemento['fecha_solicitud']) ? $elemento['fecha_solicitud'] : ' - - - ';
+                  $fecha_devolucion = isset($elemento['fecha_devolucion']) ? $elemento['fecha_devolucion'] : ' - - - ';
+                  $fecha_entrega = isset($elemento['fecha_entrega']) ? $elemento['fecha_entrega'] : ' - - - ';
+
+                  $sheet->setCellValue('C' . $row, $elemento['tomo']);
+                  $sheet->setCellValue('D' . $row, $elemento['id_usuario_otorga']); 
+                  $sheet->setCellValue('E' . $row, $id_usuario_solicita); 
+                  $sheet->setCellValue('F' . $row, $movimiento);
+                  $sheet->setCellValue('G' . $row, $fecha_solicitud);
+                  $sheet->setCellValue('H' . $row, $fecha_devolucion);
+                  $sheet->setCellValue('I' . $row, $fecha_entrega);
+                  $sheet->setCellValue('J' . $row, $elemento['estado']);
+                  $row++;
+              }
+      
+              // Crear el archivo Excel
+              $writer = new Xlsx($spreadsheet);
+      
+              // Configurar las cabeceras para la descarga
+              header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+              header('Content-Disposition: attachment;filename="ReporteAtrasos.xlsx"');
+              header('Cache-Control: max-age=0');
+      
+              // Enviar el archivo al cliente
+              $writer->save('php://output');
+
+            
+            }
+            
 
     public function exportarExpedientesR2(Request $request)
     {
         $elementos = $request->input('elementos');
-
         $id_expediente = $request->input('id_expediente');
-
 
         $archivos = public_path('exports/reporteDocumento_formato.xlsx');
         $spreadsheet = IOFactory::load($archivos);
@@ -311,13 +401,21 @@ class reportesController extends Controller
         // Llenar el archivo Excel con los datos del arreglo
         $row = 7;
         foreach ($elementos as $elemento) {
-            $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
-            $sheet->setCellValue('C' . $row, $elemento['id_usuario_solicita']);
-            $sheet->setCellValue('D' . $row, $elemento['id_expediente']); 
-            $sheet->setCellValue('E' . $row, $motivo);
-            $sheet->setCellValue('F' . $row, $elemento['fecha_solicitud']);
-            $sheet->setCellValue('G' . $row, $elemento['fecha_devolucion']);
-            $sheet->setCellValue('H' . $row, $elemento['estado']);
+
+            $movimiento= isset($elemento['Movimiento']) ? $elemento['Movimiento'] : ' - - - ';
+            $id_usuario_solicita = isset($elemento['id_usuario_realiza']) ? $elemento['id_usuario_realiza'] : ' - - - ';
+            $fecha_solicitud = isset($elemento['fecha_solicitud']) ? $elemento['fecha_solicitud'] : ' - - - ';
+            $fecha_devolucion = isset($elemento['fecha_devolucion']) ? $elemento['fecha_devolucion'] : ' - - - ';
+            $fecha_entrega = isset($elemento['fecha_entrega']) ? $elemento['fecha_entrega'] : ' - - - ';
+            
+            $sheet->setCellValue('C' . $row, $elemento['OtroDato']);
+            $sheet->setCellValue('D' . $row, $elemento['tomo']); 
+            $sheet->setCellValue('E' . $row, $id_usuario_solicita);
+            $sheet->setCellValue('F' . $row, $movimiento);
+            $sheet->setCellValue('G' . $row, $fecha_solicitud);
+            $sheet->setCellValue('H' . $row, $fecha_devolucion);
+            $sheet->setCellValue('I' . $row, $fecha_entrega);
+            $sheet->setCellValue('J' . $row, $elemento['estado']);
             $row++;
         }
 
@@ -326,7 +424,7 @@ class reportesController extends Controller
 
         // Configurar las cabeceras para la descarga
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="documento.xlsx"');
+        header('Content-Disposition: attachment;filename="ReporteExpediente.xlsx"');
         header('Cache-Control: max-age=0');
 
         // Enviar el archivo al cliente
@@ -336,12 +434,21 @@ class reportesController extends Controller
 
     public function ejecutarExpedienteDocumentoSU(Request $request)
     {
+        $id_consecutivo = $request->input('id_consecutivo');
         $id_expediente = $request->input('id_expediente');
+
+        if($id_expediente){
+            echo "Existe expediente, numero: ".$id_expediente;
+
         $registros = [];
 
         $elementos = DB::table('actividad_expedientes')
         ->where('id_expediente', $id_expediente)
         ->get();
+
+        $expediente = DB::table('expedientes')
+        ->where('id_expediente', $id_expediente)
+        ->first();
         
         // Verifica si la consulta no devolvió resultados
         if ($elementos->isEmpty()) {
@@ -351,11 +458,11 @@ class reportesController extends Controller
     
             foreach ($elementos as $elemento) {
 
-                $nombreExpediente = DB::table('expedientes')
-                    ->where('id_expediente', $elemento->id_expediente)
+                $nombreExpedienteCliente = DB::table('clientes_expedientes')
+                    ->where('id_consecutivo', $expediente->id_cliente)
                     ->value('nombre');
     
-                /*$nombreUsuario = DB::table('users')
+                    /*$nombreUsuario = DB::table('users')
                     ->where('idUsuarioSistema', $elemento->id_usuario_solicita)
                     ->value('nombre');*/
 
@@ -368,13 +475,29 @@ class reportesController extends Controller
                 // Obtener los datos originales del elemento
                 $elementoOriginal = (array) $elemento;
     
-                // Formatear las fechas en día, mes y año
-                $elementoOriginal['fecha_solicitud'] = date('d-m-Y', strtotime($elemento->fecha_solicitud));
-                $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
-    
+                if (empty($elemento->fecha_entrega)) {
+                    $elementoOriginal['fecha_entrega'] = null;
+                } else {
+                    $elementoOriginal['fecha_entrega'] = date('d-m-Y', strtotime($elemento->fecha_entrega));
+                }
+                
+                if (empty($elemento->fecha_solicitud)) {
+                    $elementoOriginal['fecha_solicitud'] = null;
+                } else {
+                    $elementoOriginal['fecha_solicitud'] = date('d-m-Y', strtotime($elemento->fecha_solicitud));
+                }
+                
+                if (empty($elemento->fecha_devolucion)) {
+                    $elementoOriginal['fecha_devolucion'] = null;
+                } else {
+                    $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
+                }
+
                 // Actualizar los campos necesarios
-                $elementoOriginal['id_expediente'] = $nombreUsuario;
-                //$elementoOriginal['id_usuario_solicita'] = $nombreUsuario;
+                $elementoOriginal['OtroDato'] = $nombreExpedienteCliente;
+                $elementoOriginal['id_usuario_solicita'] = $nombreUsuario;
+
+                $elementoOriginal['tomo'] = $expediente->nombre;
     
                 // Agregar el registro actualizado al arreglo
                 $elementosActualizados[] = (object) $elementoOriginal;
@@ -383,75 +506,74 @@ class reportesController extends Controller
             // Configurar los registros con los elementos actualizados
             $registros = $elementosActualizados;
            }
-                                             
+              
+           $listaDocumentos = DB::table('expedientes')
+           ->get();
+        
+           $listaClientes = DB::table('clientes_expedientes')
+           ->whereNotNull('id_consecutivo') // Filtra aquellos con id_consecutivo no nulo
+           ->where('id_consecutivo', '!=', 0) // Filtra aquellos con id_consecutivo diferente de 0
+           ->get();
+
         return view('expedientes.reportes.reportesSuper2', [
         'elementos' => $elementosActualizados,
         'registros' => json_encode($registros),
+        'listaDocumentos'=>$listaDocumentos,
+        'listaClientes'=>$listaClientes,
        ]);
 
 
-    }
+        }elseif ($id_consecutivo) {
+            echo "Buscando por cliente, numero: ".$id_consecutivo;
 
-    public function ejecutarDocumentoGV(Request $request){
-        $id_doc = $request->input('id_documento');
-        $registros = [];
-        $elementos = DB::table('actividad_guardavalores')
-        ->where('id_documento', $id_doc)
-        ->get();
-
-        if ($elementos->isEmpty()) {
-            $elementosActualizados = [];
-        } else {
+            $registros = [];
             $elementosActualizados = [];
 
-            foreach ($elementos as $elemento) {
-
-                /*$nombre = DB::table('guardavalores')
-                    ->where('id_documento', $elemento->id_documento)
-                    ->value('nombre');*/
-
-                $usuario = DB::table('users')
-                    ->where('idUsuarioSistema', $elemento->id_usuario)
-                    ->first();
-                
-                $nombreUsuario = $usuario->nombre . ' ' . $usuario->apellidos;
-                
-                    
-    
-                // Obtener los datos originales del elemento
-                $elementoOriginal = (array) $elemento;
-            
-                        // Formatear las fechas en día, mes y año
-                        $elementoOriginal['fecha_actividad'] = date('d-m-Y', strtotime($elemento->fecha_actividad));
-            
-                        // Actualizar los campos necesarios
-                        //$elementoOriginal['id_documento'] = $nombre;
-                        $elementoOriginal['estado'] = $nombreUsuario;
-            
-                        // Agregar el registro actualizado al arreglo
-                        $elementosActualizados[] = (object) $elementoOriginal;
-                    }
-            
-                    // Configurar los registros con los elementos actualizados
-                    $registros = $elementosActualizados;
-                   }
-
-                   $listaDocumentos = DB::table('guardavalores')
-                   ->get();
+            $listaClientes = DB::table('clientes_expedientes')
+            ->whereNotNull('id_consecutivo') // Filtra aquellos con id_consecutivo no nulo
+            ->where('id_consecutivo', '!=', 0) // Filtra aquellos con id_consecutivo diferente de 0
+            ->get();
         
-                   return view('guardavalores.reportes.reporteDocumento', [
-                    'elementos' => $elementosActualizados,
-                    'registros' => json_encode($registros),
-                    'listaDocumentos' => $listaDocumentos,
-                   ]);
+            $expedientes = DB::table('expedientes')
+            ->where('id_cliente',$id_consecutivo)
+            ->get();
 
+            return view('expedientes.reportes.reportesSuper2', [
+            'elementos' => $elementosActualizados,
+            'registros' => json_encode($registros),
+            'listaDocumentos'=>$expedientes,
+            'listaClientes'=>$listaClientes,
+           ]);
+        }else{
+            echo "Sin Expediente y sin tomo, general";
+            $registros = [];
+            $elementosActualizados = [];
+
+            $listaClientes = DB::table('clientes_expedientes')
+            ->whereNotNull('id_consecutivo') // Filtra aquellos con id_consecutivo no nulo
+            ->where('id_consecutivo', '!=', 0) // Filtra aquellos con id_consecutivo diferente de 0
+            ->get();
+        
+            $expedientes = DB::table('expedientes')
+            ->get();
+
+            return view('expedientes.reportes.reportesSuper2', [
+            'elementos' => $elementosActualizados,
+            'registros' => json_encode($registros),
+            'listaDocumentos'=>$expedientes,
+            'listaClientes'=>$listaClientes,
+           ]);
+
+        }
 
     }
+
 
     public function ejecutarUsuarioGV(Request $request)
     {
         $id_usuario = $request->input('id_usuario');
         $registros = [];
+
         $elementos = DB::table('actividad_guardavalores')
         ->where('id_usuario', $id_usuario)
         ->get();
@@ -462,16 +584,34 @@ class reportesController extends Controller
             $elementosActualizados = [];
     
             foreach ($elementos as $elemento) {
-                $nombreExpediente = DB::table('guardavalores')
-                    ->where('id_documento', $elemento->id_documento)
-                    ->value('nombre');
     
-                /*$nombreUsuario = DB::table('users')
+                    $Expediente = DB::table('guardavalores')
+                    ->where('id_documento', $elemento->id_documento)
+                    ->first();
+                
+                    $nombreExpediente = $Expediente->nombre;
+                    $id_cli = $Expediente->id_cliente;
+
+                    
+                    $nombreUsuario = DB::table('users')
                     ->where('idUsuarioSistema', $elemento->id_usuario)
-                    ->value('nombre');*/
+                    ->value('nombre');
+
+                    $Cliente = DB::table('clientes_guardavalores')
+                    ->where('id_cliente', $id_cli)
+                    ->first();
+            
     
                 // Obtener los datos originales del elemento
                 $elementoOriginal = (array) $elemento;
+
+                if ($Cliente) {
+                    $nombreCliente = $Cliente->nombre;
+                    $elementoOriginal['tipo_gv'] = $nombreCliente;
+
+                } else {
+                echo "Cliente no encontrado.";
+                }
 
                 // Formatear las fechas en día, mes y año
                 $elementoOriginal['fecha_actividad'] = date('d-m-Y', strtotime($elemento->fecha_actividad));
@@ -503,9 +643,14 @@ class reportesController extends Controller
     public function ejecutarExpedienteUsuarioSU(Request $request)
     {
         $id_usuario = $request->input('id_usuario');
+        $id_usuario = DB::table('users')
+        ->where('idUsuarioSistema', $id_usuario) // USUARIO QUE SOLICITA
+        ->select(DB::raw('CONCAT(nombre, " ", apellidos) as nombreCompleto'))
+        ->value('nombreCompleto');
+
         $registros = [];
         $elementos = DB::table('actividad_expedientes')
-        ->where('id_usuario_solicita', $id_usuario)
+        ->where('id_usuario_realiza', $id_usuario)
         ->get();
 
         if ($elementos->isEmpty()) {
@@ -526,8 +671,24 @@ class reportesController extends Controller
                 $elementoOriginal = (array) $elemento;
     
                 // Formatear las fechas en día, mes y año
-                $elementoOriginal['fecha_solicitud'] = date('d-m-Y', strtotime($elemento->fecha_solicitud));
-                $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
+                    
+                if (empty($elemento->fecha_entrega)) {
+                    $elementoOriginal['fecha_entrega'] = null;
+                } else {
+                    $elementoOriginal['fecha_entrega'] = date('d-m-Y', strtotime($elemento->fecha_entrega));
+                }
+                
+                if (empty($elemento->fecha_solicitud)) {
+                    $elementoOriginal['fecha_solicitud'] = null;
+                } else {
+                    $elementoOriginal['fecha_solicitud'] = date('d-m-Y', strtotime($elemento->fecha_solicitud));
+                }
+                
+                if (empty($elemento->fecha_devolucion)) {
+                    $elementoOriginal['fecha_devolucion'] = null;
+                } else {
+                    $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
+                }
     
                 // Actualizar los campos necesarios
                 //$elementoOriginal['id_expediente'] = $nombreExpediente;
@@ -551,6 +712,122 @@ class reportesController extends Controller
            ]);
 
     }
+
+    public function ejecutarMovGV(Request $request)
+    {
+        $fecha_inicio = $request->input('fecha_inicio');
+        $fecha_fin = $request->input('fecha_fin');
+        $movimiento = $request->input('filtro');
+        $registros = [];
+
+        $elementos = DB::table('actividad_guardavalores')
+        ->whereBetween('fecha_actividad', [$fecha_inicio, $fecha_fin]);
+
+if ($movimiento == "otros") {
+    $elementos->where('movimiento', '!=', 'Ingreso')
+              ->where('movimiento', '!=', 'Retiro');
+} else {
+    $elementos->where('movimiento', $movimiento);
+}
+
+$elementos = $elementos->get();
+
+        // Verifica si la consulta no devolvió resultados
+        if ($elementos->isEmpty()) {
+            $elementosActualizados = [];
+        } else {
+            $elementosActualizados = [];
+    
+            foreach ($elementos as $elemento) {
+
+                   $Expediente = DB::table('guardavalores')
+                    ->where('id_documento', $elemento->id_documento)
+                    ->first();
+                
+                    $nombreExpediente = $Expediente->nombre;
+                    $id_cli = $Expediente->id_cliente;
+
+                    $nombreUsuario = DB::table('users')
+                    ->where('idUsuarioSistema', $elemento->id_usuario)
+                    ->value('nombre');
+
+                    $Cliente = DB::table('clientes_guardavalores')
+                    ->where('id_cliente', $id_cli)
+                    ->first();
+            
+    
+                // Obtener los datos originales del elemento
+                $elementoOriginal = (array) $elemento;
+
+                if ($Cliente) {
+                    $nombreCliente = $Cliente->nombre;
+                    $elementoOriginal['tipo_gv'] = $nombreCliente;
+
+                } else {
+                    // Si no se encuentra el cliente, puedes manejar esta situación, por ejemplo, mostrando un mensaje de error o tomando alguna otra acción.
+                    echo "Cliente no encontrado.";
+
+                }
+                
+    
+                // Formatear las fechas en día, mes y año
+                $elementoOriginal['fecha_actividad'] = date('d-m-Y', strtotime($elemento->fecha_actividad));
+    
+                // Actualizar los campos necesarios
+                $elementoOriginal['estado'] = $nombreExpediente;
+                $elementoOriginal['id_usuario'] = $nombreUsuario;
+    
+                // Agregar el registro actualizado al arreglo
+                $elementosActualizados[] = (object) $elementoOriginal;
+            }
+    
+            // Configurar los registros con los elementos actualizados
+            $registros = $elementosActualizados;
+           }
+    
+            return view('guardavalores.reportes.reporteMovOpciones', [
+            'elementos' => $elementosActualizados,
+            'registros' => json_encode($registros),
+           ]);
+
+    }
+
+    
+    public function exportarMovGV(Request $request)
+    {
+        $elementos = $request->input('elementos');
+
+        $archivo = public_path('exports/reporteMov_formatoGV.xlsx');
+        $spreadsheet = IOFactory::load($archivo);
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Otros Movimeintos');        
+
+        // Llenar el archivo Excel con los datos del arreglo
+        $row = 7;
+        foreach ($elementos as $elemento) {
+            $motivo = isset($elemento['motivo']) ? $elemento['motivo'] : 'Sin motivo';
+
+            $sheet->setCellValue('B' . $row, $elemento['tipo_gv']);
+            $sheet->setCellValue('C' . $row, $elemento['estado']);
+            $sheet->setCellValue('D' . $row, $elemento['id_usuario']);
+            $sheet->setCellValue('E' . $row, $motivo);
+            $sheet->setCellValue('F' . $row, $elemento['fecha_actividad']);
+            $sheet->setCellValue('G' . $row, $elemento['movimiento']);
+            $row++;
+        }
+
+        // Crear el archivo Excel
+        $writer = new Xlsx($spreadsheet);
+
+        // Configurar las cabeceras para la descarga
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="MovimientosGuardavalores.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        // Enviar el archivo al cliente
+        $writer->save('php://output');
+    }
+
 
     public function ejecutarExpedienteGeneralGV(Request $request)
     {
@@ -576,6 +853,18 @@ class reportesController extends Controller
                 $nombreUsuario = DB::table('users')
                     ->where('idUsuarioSistema', $elemento->id_usuario)
                     ->value('nombre');
+
+if (is_null($elemento->usuario_solicita)) {
+    $elemento->usuario_solicita = 0;
+}
+
+$nombreUsuariolleva = DB::table('users')
+    ->where('idUsuarioSistema', $elemento->usuario_solicita)
+    ->value('nombre');
+
+if (is_null($nombreUsuariolleva)) {
+    $nombreUsuariolleva = $nombreUsuario;
+}
     
                 // Obtener los datos originales del elemento
                 $elementoOriginal = (array) $elemento;
@@ -586,6 +875,7 @@ class reportesController extends Controller
                 // Actualizar los campos necesarios
                 $elementoOriginal['estado'] = $nombreExpediente;
                 $elementoOriginal['id_usuario'] = $nombreUsuario;
+                $elementoOriginal['usuario_solicita'] = $nombreUsuariolleva;
     
                 // Agregar el registro actualizado al arreglo
                 $elementosActualizados[] = (object) $elementoOriginal;
@@ -605,6 +895,7 @@ class reportesController extends Controller
     
     public function ejecutarExpedienteGeneralSU(Request $request)
     {
+
     $fecha_inicio = $request->input('fecha_inicio');
     $fecha_fin = $request->input('fecha_fin');
 
@@ -612,8 +903,12 @@ class reportesController extends Controller
     $registros = [];
 
     $elementos = DB::table('actividad_expedientes')
-        ->whereBetween('fecha_solicitud', [$fecha_inicio, $fecha_fin])
-        ->get();
+    ->where(function ($query) use ($fecha_inicio, $fecha_fin) {
+        $query->orWhereBetween('fecha_solicitud', [$fecha_inicio, $fecha_fin])
+            ->orWhereBetween('fecha_actividad', [$fecha_inicio, $fecha_fin]);
+    })
+    ->get();
+
 
     // Verifica si la consulta no devolvió resultados
     if ($elementos->isEmpty()) {
@@ -622,24 +917,57 @@ class reportesController extends Controller
         $elementosActualizados = [];
 
         foreach ($elementos as $elemento) {
-            $nombreExpediente = DB::table('expedientes')
-                ->where('id_expediente', $elemento->id_expediente)
-                ->value('nombre');
+
+            $exp = DB::table('expedientes')
+            ->where('id_expediente', $elemento->id_expediente)
+            ->first();
+                
+            $nombreExpediente  = $exp->nombre;
+            $id_cli = $exp->id_cliente;
+                    
 
             $nombreUsuario = DB::table('users')
                 ->where('idUsuarioSistema', $elemento->id_usuario_solicita)
                 ->value('nombre');
 
+                $Cliente = DB::table('clientes_expedientes')
+                    ->where('id_consecutivo', $id_cli)
+                    ->first();
+            
+
             // Obtener los datos originales del elemento
             $elementoOriginal = (array) $elemento;
 
-            // Formatear las fechas en día, mes y año
-            $elementoOriginal['fecha_solicitud'] = date('d-m-Y', strtotime($elemento->fecha_solicitud));
-            $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
+            if (empty($elemento->fecha_entrega)) {
+                $elementoOriginal['fecha_entrega'] = null;
+            } else {
+                $elementoOriginal['fecha_entrega'] = date('d-m-Y', strtotime($elemento->fecha_entrega));
+            }
+            
+            if (empty($elemento->fecha_solicitud)) {
+                $elementoOriginal['fecha_solicitud'] = null;
+            } else {
+                $elementoOriginal['fecha_solicitud'] = date('d-m-Y', strtotime($elemento->fecha_solicitud));
+            }
+            
+            if (empty($elemento->fecha_devolucion)) {
+                $elementoOriginal['fecha_devolucion'] = null;
+            } else {
+                $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
+            }
+
 
             // Actualizar los campos necesarios
-            $elementoOriginal['id_expediente'] = $nombreExpediente;
+            $elementoOriginal['id_usuario_otorga'] = $nombreExpediente;
             $elementoOriginal['id_usuario_solicita'] = $nombreUsuario;
+
+            if ($Cliente) {
+                $nombreCliente = $Cliente->nombre;
+                $elementoOriginal['tomo'] = $nombreCliente;
+
+            } else {
+                $elementoOriginal['tomo'] = 'NE';
+            }
 
             // Agregar el registro actualizado al arreglo
             $elementosActualizados[] = (object) $elementoOriginal;
@@ -660,7 +988,10 @@ class reportesController extends Controller
     }
 
     public function homeDocumentoSuper() {
-        return view('expedientes.reportes.reportesSuper2',['elementos' => []]);
+        $listaDocumentos = DB::table('expedientes')->get();
+        $listaClientes = DB::table('clientes_expedientes')->get();
+
+        return view('expedientes.reportes.reportesSuper2',['elementos' => [],'listaDocumentos'=>$listaDocumentos,'listaClientes' => $listaClientes]);
     }
 
     public function homeUsuarioSuper() {
@@ -685,13 +1016,110 @@ class reportesController extends Controller
     }
 
     public function ReportesDocumentoGV() {
+        $clientes = DB::table('clientes_guardavalores')->get();
         $gv = DB::table('guardavalores')->get();
-        return view('guardavalores.reportes.reporteDocumento',['elementos' => [], 'listaDocumentos' => $gv]);
+        $actividad = DB::table('actividad_guardavalores')->get();
+
+        return view('guardavalores.reportes.reporteDocumento',
+        [
+            'clientes' => $clientes,
+            'elementos' => [],
+            'actividad' => $actividad, 
+            'listaDocumentos' => $gv, 
+       
+        ]);
     }
+    
+    public function ejecutarDocumentoGV(Request $request) {
+
+        $gv = $request->input('gv');
+        $id_cliente = $request->input('id_consecutivo');
+        $movimiento = $request->input('movimiento');
+
+        if ($gv) {
+            echo "GV es: ".$gv;
+
+            $gvs = DB::table('guardavalores')
+            ->get();
+
+            $clientes = DB::table('clientes_guardavalores')->get();
+
+            $elementos = DB::table('actividad_guardavalores')
+            ->where('id_documento', $gv)
+            //->where('movimiento',$movimiento)
+            ->get();
+
+            $registros = [];
+
+            if (!$elementos->isEmpty()) {
+                foreach ($elementos as $elemento) {
+                    $usuario = DB::table('users')
+                        ->where('idUsuarioSistema', $elemento->id_usuario)
+                        ->first();
+        
+                    $nombreUsuario = $usuario->nombre . ' ' . $usuario->apellidos;
+        
+                    // Actualiza los campos necesarios
+                    $elemento->fecha_actividad = date('d-m-Y', strtotime($elemento->fecha_actividad));
+                    $elemento->estado = $nombreUsuario;
+        
+                    $registros[] = $elemento;
+                }
+            }
+                
+            return view('guardavalores.reportes.reporteDocumento', [
+                'elementos' => $registros,
+                'clientes' => $clientes,
+                'dcs' => [],
+            ]);
+
+        }elseif ($id_cliente and $gv==null) {
+
+            $gvs = DB::table('guardavalores')
+            ->where('id_cliente',$id_cliente)
+            ->get();
+
+            $registros= [];
+
+            $clientes = DB::table('clientes_guardavalores')->get();
+
+            return view('guardavalores.reportes.reporteDocumento', [
+                'elementos' => $registros,
+                'clientes' => $clientes,
+                'listaDocumentos' => $gvs,
+                'dcs' => $gvs,
+            ]);
+
+        }else {
+
+            echo 'ultimo else, cliente: '. $id_cliente;
+            $gvs = DB::table('guardavalores')
+            ->get();
+
+            $registros= [];
+
+            $clientes = DB::table('clientes_guardavalores')->get();
+
+            return view('guardavalores.reportes.reporteDocumento', [
+                'elementos' => $registros,
+                'clientes' => $clientes,
+                'listaDocumentos' => $gvs,
+                'dcs' => $gvs,
+            ]);
+
+        }
+
+    }
+    
+
 
     public function ReportesUsuarioGV() {
         $gv = DB::table('users')->get();
         return view('guardavalores.reportes.reportesUsuarioGV',['elementos' => [], 'listaUsuarios' => $gv]);
+    }
+
+    public function ReportesMovGV() {
+        return view('guardavalores.reportes.reporteMovOpciones',['elementos' => []]);
     }
 
     public function __construct(){

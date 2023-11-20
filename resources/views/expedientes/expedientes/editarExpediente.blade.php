@@ -7,30 +7,31 @@
 </head>
 <body>
 <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4 text-center">Editar Expediente</h1>
+    <h1 class="text-2xl font-bold mb-4 text-center">Editar Tomo {{ $expediente->nombre }}</h1>
     
     <form class="bg-white border border-gray-300 shadow-lg rounded-md mx-auto max-w-lg px-8 pt-6 pb-8 mb-4" action="{{ route('actualizarExp', $expediente->id_expediente) }}" method="POST">
       @csrf <!-- Agrega el token CSRF para proteger el formulario -->
       @method('PUT') <!-- Utiliza el método PUT para la actualización -->
-
-      <div class="mb-4">
+      <input type="hidden" name="nombreDocumento" value="{{$expediente->nombre}}">
+      <!--<div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreDocumento">
-          Nombre de Expediente
+          Nombre de Tomo
         </label>
         <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="nombreDocumento" type="text" name="nombreDocumento" value="{{ $expediente->nombre }}" required>
-      </div>
+      </div>-->
+
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="descripcion">
           Descripción
         </label>
         <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="descripcion" type="text" name="descripcion" value="{{ $expediente->descripcion }}" required>
       </div> 
-      <div class="mb-4">
+      <!--<div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="folioReal">
           Folio Real
         </label>
         <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="folioReal" type="text" name="folioReal" value="{{ $expediente->folio_real }}">
-      </div>
+      </div>-->
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="otrosDatos">
           Otros datos

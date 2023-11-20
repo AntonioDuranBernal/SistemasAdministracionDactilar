@@ -55,46 +55,49 @@
 
 <h1 class="text-2xl font-bold mb-4 text-center">{{$nombre}}</h1>
 
-        @if(count($elementos) > 0)
-        <div class="custom-scroll">
+
+@if(count($elementos) > 0)
+            <div class="text-left">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col" class="px-6 py-3">
-                            Nombre de documento
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Número <br> de contrato
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            ID o Folio Real
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Fecha de Registro
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Disponibilidad
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            <span class="sr-only">Opción</span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+    <tr>
+        <th scope="col" class="px-6 py-3" style="width: 17%;">Tipo de Documento</th>
+        <th scope="col" class="px-6 py-3" style="width: 28%;">Nombre de Documento</th>
+        <th scope="col" class="px-6 py-3" style="width: 20%;">Fecha de Entrega</th>
+        <th scope="col" class="px-6 py-3" style="width: 10%;">Disponibilidad</th>
+        <th scope="col" class="px-6 py-3" style="width: 39%;"></th>
+    </tr>
+</thead>
+    </table>
+            </div>
+                    
+                    
+    <div class="custom-scroll">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <tbody>
+
                     @foreach($elementos as $elemento)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->nombre}}
+                    <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                            {{$elemento->tipo_gv}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                        @if(!empty($elemento->nombre))
+        {{ $elemento->nombre }}
+    @else
+        {{ $elemento->tipo_gv }}
+    @endif
+                        </td>
+                       
+                        <!--<td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->numero_contrato}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->folio_real}}
-                        </td>
+                        </td>-->
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-    {{ \Carbon\Carbon::parse($elemento->fecha_creacion)->format('d/m/Y') }}
-</td>
+                        {{ \Carbon\Carbon::parse($elemento->fecha_entrega)->format('d/m/Y') }}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->estado}}
                         </td>

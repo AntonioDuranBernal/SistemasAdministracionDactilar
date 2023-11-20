@@ -59,7 +59,7 @@
             <select id="reportSelect" class="block mt-4 lg:inline-block lg:mt-0 bg-blue-500 text-white border border-white">
                 <option selected>Reportes</option>
                 <option value="{{ route('homeReportesUno') }}">Reporte General</option>
-                <option value="{{ route('homeReportesDos') }}">Por Documento</option>
+                <option value="{{ route('homeReportesDos') }}">Por Tomos</option>
                 <option value="{{ route('homeReportesTres') }}">Por Usuarios</option>
                 <option value="{{ route('homeReportesCuatro') }}">Devoluciones</option>
             </select>
@@ -71,10 +71,21 @@
       </div>
 
 
-    <a href="{{route('home')}}" class="text-lg px-6 py-3 leading-none border rounded text-white border-white hover:border-transparent hover:text-blue-500 hover:bg-white mt-4 lg:mt-0">Configuración</a> <!-- Cambio de color de texto a text-white y hover:text-blue-500 -->
+      <a href="{{ route('logout') }}"
+   onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+   class="text-lg px-6 py-3 leading-none border rounded text-white border-white hover:border-transparent hover:text-blue-500 hover:bg-white mt-4 lg:mt-0">
+   Salir
+      </a>  
+
+
+      <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+    @csrf
+</form>
+
+
   </nav>
   <br>
-  <h1 class="text-2xl font-bold mb-4 text-center">ACTIVIDAD DE EXPEDIENTES</h1>
+  <h1 class="text-2xl font-bold mb-4 text-center">ACTIVIDAD</h1>
 
   <div class="w-full flex justify-center">
     <div class="w-full sm:w-4/5 md:w-4/5 lg:w-7/8 p-4 mb-1 custom-scroll">
@@ -82,11 +93,12 @@
         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
+              
               <th scope="col" class="px-6 py-3">
-                Nombre <br> de usuario
+                Número de Tomo
               </th>
               <th scope="col" class="px-6 py-3">
-                Nombre de expediente
+                Nombre <br> de usuario
               </th>
               <th scope="col" class="px-6 py-3">
                 Fecha solicitud
@@ -125,17 +137,13 @@
               </td>-->
             </tr>
             @endforeach
-          </tbody>
-        </table>
-      @else
-        
-          <img src="imagenes/los_alamos_sinfondo.png" alt="Sin registros" class="mx-auto mt-8">
-        
+                </tbody>
+            </table>
+        </div>
+        @else
+         <img src="imagenes/los_alamos_sinfondo.png" alt="Sin registros" class="mx-auto mt-8">
       @endif
-    </div>
-  </div>
-</body>
-</html>
+
 
 <script>
     const select = document.getElementById('reportSelect');
@@ -155,3 +163,5 @@
     });
 </script>
 
+</body>
+</html>

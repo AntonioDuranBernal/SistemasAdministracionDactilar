@@ -148,11 +148,13 @@
 </div>
 
       <div class="flex justify-center mt-4">
-        <!--<button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2" type="submit">
-          Borrar
-        </button>-->
         <a href="{{route('homeUsuarios')}}"  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Volver</a>
+      
+        <a href="{{ route('usuario.edit', $usuario->idUsuarioSistema) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" style="margin-left: 1rem;">Editar</a>
+      
+        <a href="{{ route('borrarUsuario', $usuario->idUsuarioSistema) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" style="margin-left: 1rem;">Eliminar</a>
       </div>
+
     </div>
   </div>
 </body>

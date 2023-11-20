@@ -29,6 +29,7 @@
   </style>
 </head>
 <body>
+
   <nav class="flex items-center justify-between bg-blue-500 p-6">
     <!-- Agrega la imagen al inicio del menú -->
     <!--<img src="imagenes/los_alamos_imagen.jpeg" alt="Logo" class="h-10 w-10 mr-2">-->
@@ -50,7 +51,7 @@
             Guardavalores
         </a>
 
-        @if($idRol>2)
+        @if($idRol>1)
         <a href="{{ route('homeUsuarios') }}" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-blue-200 mr-4">
             Usuarios
         </a>
@@ -62,7 +63,8 @@
         <div class="relative inline-block text-white">
             <select id="reportSelect" class="block mt-4 lg:inline-block lg:mt-0 bg-blue-500 text-white border border-white">
                 <option selected>Reportes</option>
-                <option value="{{ route('homeReportesUnoGV') }}">Reporte de Movimientos</option>
+                <!--<option value="{{ route('homeReportesUnoGV') }}">Reporte de Movimientos</option>-->
+                <option value="{{ route('ReporteMovGV') }}">Reporte de Movimientos en Guardavalores</option>
                 <option value="{{ route('ReporteDocumentoGV') }}">Reporte por Documento</option>
                 <option value="{{ route('ReporteUsuarioGV') }}">Reporte por Usuario</option>
             </select>
@@ -74,47 +76,69 @@
       </div>
       </div>
 
+      <a href="{{ route('logout') }}"
+   onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+   class="text-lg px-6 py-3 leading-none border rounded text-white border-white hover:border-transparent hover:text-blue-500 hover:bg-white mt-4 lg:mt-0">
+   Salir
+</a>
 
-    <a href="{{route('home')}}" class="text-lg px-6 py-3 leading-none border rounded text-white border-white hover:border-transparent hover:text-blue-500 hover:bg-white mt-4 lg:mt-0">Configuración</a> <!-- Cambio de color de texto a text-white y hover:text-blue-500 -->
+<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+    @csrf
+</form>
+
   </nav>
   <br>
+
+  <h1 class="font-bold text-center">
+    @if (isset($nombre))
+        {{ $nombre }}
+    @endif
+</h1>
+
   <h1 class="text-2xl font-bold mb-4 text-center">ACTIVIDAD DE GUARDAVALORES</h1>
 
+        
   <div class="w-full flex justify-center">
-    <div class="w-full sm:w-4/5 md:w-4/5 lg:w-7/8 p-4 mb-1 custom-scroll">
-      @if(count($elementos) > 0)
-        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-            <th scope="col" class="px-6 py-3">
-                Tipo <br> de documento
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Nombre de documento
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Movimiento
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Fecha
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Nombre <br> de usuario
-              </th>
+  <div class="w-full sm:w-4/5 md:w-4/5 lg:w-7/8 p-4 mb-1">
 
-            </tr>
-          </thead>
-          <tbody>
+    <div class="table-container">
+
+    @if(count($elementos) > 0)
+
+      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+        <th scope="col" class="px-6 py-3" style="width: 30%;">Nombre de Documento</th>
+        <th scope="col" class="px-6 py-3" style="width: 10%;">Movimiento</th>
+        <th scope="col" class="px-6 py-3" style="width: 15%;">Motivo</th>
+        <th scope="col" class="px-6 py-3" style="width: 15%;">Fecha</th>
+        <th scope="col" class="px-6 py-3" style="width: 20%;">Nombre de usuario</th>
+
+        </tr>
+      </thead>
+    </table>
+
+    <div class="custom-scroll">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <tbody>
+
             @foreach($elementos as $elemento)
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-              <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+              <!--<td class="px-6 py-4 whitespace-nowrap dark:text-white">
                 {{$elemento->tipo_gv}}
-              </td>
+              </td>-->
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                {{$elemento->id_documento}}
+              @if(!empty($elemento->id_documento))
+                            {{ $elemento->id_documento}}
+                        @else
+                            {{ $elemento->tipo_gv}}
+                        @endif  
               </td>
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                 {{$elemento->movimiento}}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                {{$elemento->motivo}}
               </td>
               <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                 {{$elemento->fecha_actividad}}
@@ -136,8 +160,12 @@
       @endif
     </div>
   </div>
+  </div>
+  </div>
+
 </body>
 </html>
+
 
 <script>
     const select = document.getElementById('reportSelect');

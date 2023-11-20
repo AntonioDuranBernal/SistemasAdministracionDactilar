@@ -62,39 +62,32 @@
     </div>
 
 </div>
-<h1 class="text-2xl font-bold mb-4 text-center">EXPEDIENTES REGISTRADOS</h1>
+<h1 class="text-2xl font-bold mb-4 text-center">TOMOS REGISTRADOS</h1>
 
 
-        @if(count($elementos) > 0)
-        <div class="custom-scroll">
+@if(count($elementos) > 0)
+            <div class="text-left">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col" class="px-6 py-3">
-                            Nombre de Expediente
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Número <br> de expediente
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Descripción
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Disponibilidad
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            <span class="sr-only">Opción</span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($elementos as $elemento)
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+    <tr>
+        <th scope="col" class="px-6 py-3" style="width: 20%;">Número de Tomo</th>
+        <th scope="col" class="px-6 py-3" style="width: 40%;">Nombre de Expediente</th>
+        <th scope="col" class="px-6 py-3" style="width: 24%;">Disponibilidad</th>
+        <th scope="col" class="px-6 py-3" style="width: 10%;"></th>
+    </tr>
+</thead>
+    </table>
+            </div>
+                    
+                    
+    <div class="custom-scroll">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <tbody>
+
+    @foreach($elementos as $elemento)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->nombre}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->id_expediente}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                             {{$elemento->descripcion}}
@@ -111,8 +104,10 @@
             </table>
         </div>
         @else
-        <!--<img src="imagenes/los_alamos_sinfondo.png" alt="Sin registros" class="mx-auto mt-8">-->
-      @endif
+        
+        <img src="imagenes/los_alamos_sinfondo.png" alt="Sin registros" class="mx-auto mt-8">
+          
+        @endif
     </div>
 </div>
 

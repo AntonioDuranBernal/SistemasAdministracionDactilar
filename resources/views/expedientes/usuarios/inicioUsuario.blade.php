@@ -27,10 +27,58 @@
       border-radius: 3px; /* Borde redondeado del pulgar */
     }
   </style>
+
+<script>
+
+        setTimeout(function () {
+        var successMessage = document.querySelector('.alert-error');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+    }, 5000); // 10000 milisegundos = 10 segundos
+
+    setTimeout(function () {
+        var successMessage = document.querySelector('.alert-success');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+    }, 5000); // 10000 milisegundos = 10 segundos
+
+    setTimeout(function () {
+        var successMessage = document.querySelector('.alert-info');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+    }, 5000); // 10000 milisegundos = 10 segundos
+
+</script>
+
+
 </head>
 <body>
 
   <nav class="flex items-center justify-between bg-blue-500 p-6">
+
+  @if(session('info'))
+    <div class="alert-info bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Información:</strong>
+        <span class="block sm:inline">{{ session('info') }}</span>
+    </div>
+   @endif
+
+    @if(session('success'))
+    <div class="alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Éxito!</strong>
+        <span class="block sm:inline">{{ session('success') }}</span>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Error!</strong>
+        <span class="block sm:inline">{{ session('error') }}</span>
+    </div>
+    @endif
     
     <div class="block lg:hidden">
       <button class="flex items-center px-3 py-2 border rounded text-teal-200 border-teal-400 hover:text-white hover:border-white">

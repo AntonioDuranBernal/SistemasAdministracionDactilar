@@ -5,18 +5,21 @@ namespace App\Http\Controllers\expedientes;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
+//use Illuminate\Support\Facades\Auth;
+use Auth;
 
 
 class ExpedientesSuperController extends Controller
 {
 
+    
     public function __construct(){
         $this->middleware('auth');
     }
+    
 
     public function actualizarExp(Request $request, $id_expediente)
-{
+   {
     // Valida los datos del formulario
     /*$request->validate([
         'nombreDocumento' => 'required',
@@ -34,23 +37,58 @@ class ExpedientesSuperController extends Controller
             'otros_datos' => $request->input('otrosDatos'),
         ]);
 
-    return redirect()->route('homeExpedientes')->with('success', 'Expediente actualizado correctamente');
+        session()->flash('success', 'El expediente fue actualizado.');
+    return redirect()->route('homeExpedientes');
 }
 
 
     
     public function devolverExpediente($id_e,$id_u,$id_a){
 
-                // Actualizar el estado a 'Devolución atrasada'
-                    DB::table('actividad_expedientes')
-                    ->where('id_actividad', $id_a)
-                    ->update(['estado' => 'Disponible']);
-    
-                DB::table('expedientes')
-                    ->where('id_expediente',$id_e)
-                    ->update(['estado' => 'Disponible']); 
+        $fecha = date('Y-m-d');
 
-                    return redirect()->route('expedientesBasico',$id_u);
+        $idUser = DB::table('users')
+        ->where('idUsuarioSistema', auth()->id())
+        ->value('idUsuarioSistema');
+
+        $nombreUser = DB::table('users')
+        ->select(DB::raw("CONCAT(nombre, ' ', apellidos) as nombre_completo"))
+        ->where('idUsuarioSistema', auth()->id())
+        ->value('nombre_completo');
+    
+                DB::table('expedientes') //EXPEDIENTES
+                    ->where('id_expediente',$id_e)
+                    ->update(['estado' => 'Disponible',
+                    'usuario_posee' => null,
+                ]); 
+
+                
+                DB::table('actividad_expedientes') //ACTIVIDAD
+                    ->where('id_actividad', $id_a)
+                    ->update(['estado' => 'Disponible',
+                ]);
+
+                $act = DB::table('actividad_expedientes') 
+                ->where('id_actividad', $id_a)
+                ->first();
+
+                DB::table('actividad_expedientes')->insert([
+                    'estado' => 'Disponible',
+                    'id_expediente' => $id_e,
+                    'fecha_entrega' => $fecha,
+                    'fecha_actividad' => $fecha,
+                    'Movimiento' => 'Devolución',
+                    'Motivo' => 'Devolución',
+                    'fecha_entrega' => $fecha,
+                    'fecha_solicitud' => $act->fecha_solicitud,
+                    'fecha_devolucion' => $act->fecha_devolucion,
+                    'id_usuario_solicita' => $act->id_usuario_solicita,
+                    'id_usuario_realiza'=> $nombreUser,
+                ]);
+
+
+
+                return redirect()->route('expedientesBasico',$idUser);
 
     }
 
@@ -59,20 +97,31 @@ class ExpedientesSuperController extends Controller
     
     // Verifica si se encontró el expediente
     if (!$expediente) {
-        return redirect()->route('homeExpedientes')->with('error', 'Expediente no encontrado');
+        session()->flash('info', 'Expediente no encontrado.');
+        return redirect()->route('homeExpedientes');
+    }
+    
+    return view('expedientes.expedientes.editarExpediente', compact('expediente'));
     }
 
-    return view('expedientes.expedientes.editarExpediente', compact('expediente'));
+
+    public function borrarUsuario($IUE)
+    {
+        $idUser = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+            ->value('idUsuarioSistema');
+
+        DB::table('users')->where('idUsuarioSistema', $IUE)->delete();
+        
+        return redirect()->route('volverHomeSegunArea');
     }
 
     
     public function eliminarExpediente($id)
     {
-        //$usuario = Auth::user();
-        //$idUser = $usuario->idUsuarioSistema;
-        //$nombre = $usuario->nombre;
-    
-        $idUser = 7;
+        $idUser = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+            ->value('idUsuarioSistema');
 
         DB::table('expedientes')->where('id_expediente', $id)->delete();
         
@@ -82,16 +131,17 @@ class ExpedientesSuperController extends Controller
     
     public function inicioExpedientes(){
 
-        //$usuario = Auth::user();
-        //$idUser = $usuario->idUsuarioSistema;
-        //$nombre = $usuario->nombre;
-        //$idRol = $usuario->rol;
+        $idUser = DB::table('users')
+                ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+                ->value('idUsuarioSistema');
 
-        $idUser = 1;
-        $nombre = 'ES BASICO EN EXPEDIENTES SUPER CONTROLLER';
-        $idRol = 3;
+        DB::table('users')   
+        ->where('idUsuarioSistema', $idUser)
+        ->update(['area' => 1]);
 
-        echo "USUARIO LOGEADOO: ".$idUser. " NOMBRE: ".$nombre;
+        $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
+        $idRol = $user->rol;
+        $nombre = $user->nombre;
 
         $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
         $consulta = DB::table('users')
@@ -104,26 +154,29 @@ class ExpedientesSuperController extends Controller
         foreach ($permisos as $indice => $valor) {
         $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
         }
-
-        foreach ($permisos as $permiso) {
-            echo $permiso . " ";
-        }
+        
         $elementosActualizados = [];
 
         if ($idRol==1) {
-                        //CODIGO PARA USUARIO BASICO
-                        $elementos = DB::table('actividad_expedientes')//CONSULTA PARA OBTENER LA ACTIVIDAD PARA MOSTAR EN ADMINISTRADOR
-                        ->join('expedientes', 'actividad_expedientes.id_expediente', '=', 'expedientes.id_expediente')
-                        ->select('actividad_expedientes.*', 'expedientes.nombre AS nombre')
-                        ->where('id_usuario_solicita', $idUser)
-                        ->get();
+            $fechaLimite = now()->subDays(5); // Obtener la fecha límite (hoy - 3 días)
+            $elementos = DB::table('actividad_expedientes')
+                ->join('expedientes', 'actividad_expedientes.id_expediente', '=', 'expedientes.id_expediente')
+                ->select('actividad_expedientes.*', 'expedientes.nombre AS nombre')
+                ->where('id_usuario_solicita', $idUser)
+                ->where('fecha_solicitud', '>=', $fechaLimite) // Filtrar por los últimos 3 días
+                ->orderBy('fecha_solicitud', 'desc') // Ordenar por fecha_solicitud de mayor a menor
+                ->get();
+            
+        
         } else {
-
-                        //CODIGO PARA USUARIO SUPER O ADMIN
-                        $elementos = DB::table('actividad_expedientes')//CONSULTA PARA OBTENER LA ACTIVIDAD PARA MOSTAR EN ADMINISTRADOR
-                        ->join('expedientes', 'actividad_expedientes.id_expediente', '=', 'expedientes.id_expediente')
-                        ->select('actividad_expedientes.*', 'expedientes.nombre AS nombre')
-                        ->get();
+            $fechaLimite = now()->subDays(5); // Obtener la fecha límite (hoy - 3 días)
+            $elementos = DB::table('actividad_expedientes')
+                ->join('expedientes', 'actividad_expedientes.id_expediente', '=', 'expedientes.id_expediente')
+                ->select('actividad_expedientes.*', 'expedientes.nombre AS nombre')
+                ->where('fecha_solicitud', '>=', $fechaLimite) // Filtrar por los últimos 3 días
+                ->orderBy('fecha_solicitud', 'desc') // Ordenar por fecha_solicitud de mayor a menor
+                ->get();
+            
         }
 
         if ($elementos) {
@@ -136,6 +189,17 @@ class ExpedientesSuperController extends Controller
                 $nombreUsuario = DB::table('users')
                     ->where('idUsuarioSistema', $elemento->id_usuario_solicita)
                     ->value('nombre');
+
+                    $numExpe = DB::table('clientes_expedientes')
+                    ->join('expedientes', 'clientes_expedientes.id_consecutivo', '=', 'expedientes.id_cliente')
+                    ->where('expedientes.id_expediente', $elemento->id_expediente)
+                    ->value('clientes_expedientes.nombre');
+
+                    $numExpeCliente = DB::table('clientes_expedientes')
+                    ->join('expedientes', 'clientes_expedientes.id_cliente', '=', 'expedientes.id_cliente')
+                    ->where('expedientes.id_expediente', $elemento->id_expediente)
+                    ->value('clientes_expedientes.id_cliente');
+                
         
                 // Obtener los datos originales del elemento
                 $elementoOriginal = (array) $elemento;
@@ -145,30 +209,36 @@ class ExpedientesSuperController extends Controller
                 $elementoOriginal['fecha_devolucion'] = date('d-m-Y', strtotime($elemento->fecha_devolucion));
         
                 // Actualizar los campos necesarios
-                $elementoOriginal['id_expediente'] = $nombreExpediente;
-                $elementoOriginal['id_usuario_solicita'] = $nombreUsuario;
+                $elementoOriginal['OtroDato'] = $nombreExpediente;
+                $elementoOriginal['id_usuario_otorga'] = $nombreUsuario;
+                $elementoOriginal['id_cliente']= $numExpe;
+                $elementoOriginal['tomo']= $numExpeCliente;
+                $elementoOriginal['id_expediente']= $elemento->id_expediente;
     
                 // Verificar y actualizar el estado si es necesario
                 if ($elementoOriginal['estado'] == 'En uso') {
-                    // Calcular la diferencia en días entre la fecha de devolución y la fecha actual
+
                     $fechaDevolucion = strtotime($elemento->fecha_devolucion);
-                    $fechaActual = strtotime(date('Y-m-d'));
-                    echo "fecha dev: " . $fechaDevolucion . " fecha actual ".$fechaActual;
-                    $diferenciaDias = floor(($fechaDevolucion - $fechaActual) / (60 * 60 * 24));
-                
-                    if ($diferenciaDias < 0) {
-                        // Actualizar el estado a 'Devolución atrasada'
+                    $fechaDevolucionFormateada = date('Y-m-d', $fechaDevolucion);
+
+                    date_default_timezone_set('America/Mexico_City');
+                    $fechaActual = date('Y-m-d');
+                    
+                    if (strtotime($fechaDevolucionFormateada) < strtotime($fechaActual)) {
+                        //if ($fechaActual > $fechaDevolucionFormateada) {
+                        // La fecha actual es mayor que la fecha de devolución, actualizar el estado a 'Devolución atrasada'
                         DB::table('actividad_expedientes')
                             ->where('id_actividad', $elemento->id_actividad)
                             ->update(['estado' => 'Devolución atrasada']);
-                
+                    
                         DB::table('expedientes')
                             ->where('id_expediente', $elemento->id_expediente)
                             ->update(['estado' => 'Devolución atrasada']);
-                
+                    
                         // Actualizar el estado en el elemento original
                         $elementoOriginal['estado'] = 'Devolución atrasada';
                     }
+                    
                 }
         
                 // Agregar el registro actualizado al arreglo
@@ -176,7 +246,7 @@ class ExpedientesSuperController extends Controller
             }
         }
 
-        return view('expedientes.super.homeAdmin', ['elementos' => $elementosActualizados,'permisosUsuario' => $permisosUsuario, 'usuario' => $idUser, 'idRol' => $idRol]);
+        return view('expedientes.super.homeAdmin', ['elementos' => $elementosActualizados,'permisosUsuario' => $permisosUsuario, 'usuarioActual' => $idUser, 'idRol' => $idRol, 'nombre'=>$nombre]);
 
     }
        
@@ -210,9 +280,12 @@ class ExpedientesSuperController extends Controller
             $elementoOriginal['id_expediente'] = $nombreExpediente;
             $elementoOriginal['id_usuario_solicita'] = $nombreUsuario;
 
+            date_default_timezone_set('America/Mexico_City');
+            $fecha_hoy = date('Y-m-d');
+
             // Verificar y actualizar el estado si es necesario
-            if ($elementoOriginal['estado'] == 'En uso' && strtotime($elemento->fecha_devolucion) < strtotime(date('Y-m-d H:i:s'))) {
-            // Actualizar el estado a 'Devolución atrasada'
+            if ($elementoOriginal['estado'] == 'En uso' && strtotime($elemento->fecha_devolucion) < $fecha_hoy) {
+
             DB::table('actividad_expedientes')
                 ->where('id_actividad', $elemento->id_actividad)
                 ->update(['estado' => 'Devolución atrasada']);
@@ -233,54 +306,85 @@ class ExpedientesSuperController extends Controller
     }
 
     public function listadoExpedientes() {
-        $elementos = DB::table('expedientes')->get();
+        $elementos = DB::table('expedientes')
+        ->orderBy('fecha_creacion', 'desc')
+        ->get();
     
+        
         // Recorrer los elementos y truncar los campos "descripcion" y "nombre de expediente"
         foreach ($elementos as $elemento) {
-            $elemento->descripcion = mb_substr($elemento->descripcion, 0, 25); // Truncar a 25 caracteres
-            $elemento->nombre = mb_substr($elemento->nombre, 0, 25); // Truncar a 25 caracteres
+            $elemento->descripcion = mb_substr($elemento->descripcion, 0, 30); // Truncar a 25 caracteres
+            $elemento->nombre = mb_substr($elemento->nombre, 0, 30); // Truncar a 25 caracteres
         }
     
         return view('expedientes.expedientes.homeExpedientesListado', ['elementos' => $elementos]);
     }
 
+    public function homeExpedientesUB($id_usuario) {
+
+        $elementos = DB::table('expedientes')
+    ->orderBy('fecha_creacion', 'desc')
+    ->get();
+
+        
+        // Recorrer los elementos y truncar los campos "descripcion" y "nombre de expediente"
+        foreach ($elementos as $elemento) {
+            $elemento->descripcion = mb_substr($elemento->descripcion, 0, 30); // Truncar a 25 caracteres
+            $elemento->nombre = mb_substr($elemento->nombre, 0, 30); // Truncar a 25 caracteres
+        }
+    
+        return view('expedientes.expedientes.homeExpedientesListadoUB', ['elementos' => $elementos, 'id_usuario' => $id_usuario]);
+    }
 
     public function search(Request $request) {
         $search_term = $request->input('id_expediente');
     
-        // Verifica si el término de búsqueda es un número o un nombre
-        if (is_numeric($search_term)) {
-            // Si es un número, busca por ID
+        if (preg_match('/^\d+$/', $search_term)) {
+            // Si el término de búsqueda es solo un número, busca en el campo 'id_cliente'
             $expedientes = DB::table('expedientes')
-                ->where('id_expediente', $search_term)
+                ->where('id_cliente', $search_term)
+                ->get();
+        } elseif (preg_match('/^\d+-\d+$/', $search_term)) {
+            // Si el término de búsqueda tiene el formato "número-número", busca en el campo 'nombre'
+            $expedientes = DB::table('expedientes')
+                ->where('nombre', $search_term)
                 ->get();
         } else {
             // Si no es un número, busca por nombre
             $expedientes = DB::table('expedientes')
-                ->where('nombre', 'LIKE', "%$search_term%")
+                ->where('descripcion', 'LIKE', "%$search_term%")
                 ->get();
         }
     
         if ($expedientes->isEmpty()) {
-            return redirect()->route('homeExpedientes')->with('error', 'No se encontró ningún expediente con el término proporcionado.');
+            return redirect()->route('homeExpedientes')->with('error', 'No se encontró ningún tomo con el término proporcionado.');
         }
+    
+        // Modificar los resultados para incluir el nombre completo
+        $expedientes = $expedientes->map(function ($expediente) {
+            $nombreCompleto = $expediente->nombre . " - " . $expediente->descripcion; // Modificar según tus campos
+            $expediente->nombre_completo = $nombreCompleto;
+            return $expediente;
+        });
     
         return view('expedientes.expedientes.homeExpedientesListado', ['elementos' => $expedientes]);
     }
+    
 
     public function detallesExpedienteBasico($id_exp,$id_usuario){
+
         $expediente = DB::table('expedientes')
         ->where('id_expediente', $id_exp)
         ->first();
 
     // Verificar si el expediente existe en la base de datos
     if (!$expediente) {
-        return redirect()->route('homeClientesUsuario',$id_usuario)->with('error', 'No se encontró ningún detalle de ese expediente.');
+        return redirect()->route('homeClientesUsuario',$id_usuario)->with('error', 'No se encontró expediente.');
     }
 
       // Obtener el cliente al que pertenece el expediente
       $clienteNombre = DB::table('clientes_expedientes')
-      ->where('id_cliente', $expediente->id_cliente)
+      ->where('id_consecutivo', $expediente->id_cliente)
       ->value('nombre');
 
      // Verificar si se encontró el cliente
@@ -293,11 +397,15 @@ class ExpedientesSuperController extends Controller
       ->where('idUsuarioSistema', $expediente->usuario_creador)
       ->value('nombre'); // Cambia 'nombre_usuario' por el nombre de la columna que contiene el nombre del usuario
 
+      $usuarioPosee = DB::table('users')
+      ->where('idUsuarioSistema', $expediente->usuario_posee)
+      ->value('nombre'); // Cambia 'nombre_usuario' por el nombre de la columna que contiene el nombre del usuario
+
+
     $expediente->id_cliente = $clienteNombre;
     $expediente->usuario_creador = $usuarioCreador;
+    $expediente->usuario_posee = $usuarioPosee;
     $expediente->fecha_creacion = date('d-m-Y', strtotime($expediente->fecha_creacion));
-
-
 
     $consulta = DB::table('users')
     ->select('registrarExpediente', 'consultarExpediente', 'editarExpediente', 'eliminarExpediente', 'reportesExpediente')
@@ -316,20 +424,20 @@ class ExpedientesSuperController extends Controller
     }
 
     public function detallesExpediente($id_exp) {
+        
+        $idUser = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+            ->value('idUsuarioSistema');
+
         // Buscar el expediente por su nombre en la base de datos
         $expediente = DB::table('expedientes')
             ->where('id_expediente',$id_exp)
-            ->first();
-    
-        // Verificar si el expediente existe en la base de datos
-        if (!$expediente) {
-            return redirect()->route('homeExpedientes')->with('error', 'No se encontró ningún detalle de ese expediente.');
-        }
-    
-        // Obtener el cliente al que pertenece el expediente
-        $clienteNombre = DB::table('clientes_expedientes')
-            ->where('id_cliente', $expediente->id_cliente)
-            ->value('nombre');
+            ->first();                                                                                                                                                                                                                                                                                                                                                                                                                          
+        
+              // Obtener el cliente al que pertenece el expediente
+      $clienteNombre = DB::table('clientes_expedientes')
+      ->where('id_consecutivo', $expediente->id_cliente)
+      ->value('nombre');
     
         // Verificar si se encontró el cliente
         if (!$clienteNombre) {
@@ -341,12 +449,29 @@ class ExpedientesSuperController extends Controller
             ->where('idUsuarioSistema', $expediente->usuario_creador)
             ->value('nombre'); // Cambia 'nombre_usuario' por el nombre de la columna que contiene el nombre del usuario
     
+            $usuarioPosee = DB::table('users')
+            ->where('idUsuarioSistema', $expediente->usuario_posee)
+            ->value('nombre'); // Cambia 'nombre_usuario' por el nombre de la columna que contiene el nombre del usuario
+      
         $expediente->id_cliente = $clienteNombre;
         $expediente->usuario_creador = $usuarioCreador;
+        $expediente->usuario_posee = $usuarioPosee;
         $expediente->fecha_creacion = date('d-m-Y', strtotime($expediente->fecha_creacion));
 
+        $consulta = DB::table('users')
+    ->select('registrarExpediente', 'consultarExpediente', 'editarExpediente', 'eliminarExpediente', 'reportesExpediente')
+    ->where('idUsuarioSistema', $idUser)
+    ->first();
 
-        return view('expedientes.expedientes.detalles', ['expediente' => $expediente]);
+    $permisos = (array) $consulta;
+    $permisosUsuario = [];
+
+    foreach ($permisos as $indice => $valor) {
+    $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
+    }
+
+
+        return view('expedientes.expedientes.detalles', ['expediente' => $expediente, 'permisosUsuario' => $permisosUsuario]);
     }
 
     public function solicitarExpUB($id_exp, $id_usuario){
@@ -362,11 +487,12 @@ class ExpedientesSuperController extends Controller
 
         // Obtener el cliente al que pertenece el expediente
         $clienteNombre = DB::table('clientes_expedientes')
-            ->where('id_cliente', $expediente->id_cliente)
+            ->where('id_consecutivo', $expediente->id_cliente)
             ->value('nombre');
 
             // Verificar si se encontró el cliente
         if (!$clienteNombre) {
+            session()->flash('info', 'No se encontró ningún cliente asociado a este expediente.');
             return redirect()->route('expedientesBasico',$id_exp)->with('error', 'No se encontró cliente.');
         }
     
@@ -378,7 +504,7 @@ class ExpedientesSuperController extends Controller
         $expediente->id_cliente = $clienteNombre;
         $expediente->usuario_creador = $usuarioCreador;
 
-        $fecha = now()->format('Y-m-d');
+        $fecha = date('Y-m-d', strtotime('-1 day'));
 
         return view('expedientes.expedientes.solicitarExpUB', ['expediente' => $expediente, 'id_usuario' => $id_usuario, 'fecha' => $fecha]);
 
@@ -392,17 +518,19 @@ class ExpedientesSuperController extends Controller
     
         // Verificar si el expediente existe en la base de datos
         if (!$expediente) {
-            return redirect()->route('homeExpedientes')->with('error', 'No se encontró ningún detalle de ese expediente.');
+            session()->flash('info', 'No se encontró ningún detalle de ese expediente..');
+            return redirect()->route('homeExpedientes');
         }
     
         // Obtener el cliente al que pertenece el expediente
         $clienteNombre = DB::table('clientes_expedientes')
-            ->where('id_cliente', $expediente->id_cliente)
+            ->where('id_consecutivo', $expediente->id_cliente)
             ->value('nombre');
     
         // Verificar si se encontró el cliente
         if (!$clienteNombre) {
-            return redirect()->route('homeExpedientes')->with('error', 'No se encontró ningún cliente asociado a este expediente.');
+            session()->flash('info', 'No se encontró ningún cliente asociado a este expediente.');
+            return redirect()->route('homeExpedientes');
         }
     
         // Obtener el usuario que registró el expediente
@@ -413,11 +541,7 @@ class ExpedientesSuperController extends Controller
         $expediente->id_cliente = $clienteNombre;
         $expediente->usuario_creador = $usuarioCreador;
 
-        $fecha = now()->format('Y-m-d');
-
-        //date_default_timezone_set('America/Mexico_City');
-        //$fecha = date("Y-m-d h:m:s");
-        //$fecha = date("Y-m-d",strtotime($fecha."- 1 days"));
+        $fecha = date('Y-m-d', strtotime('-1 day'));
 
         return view('expedientes.expedientes.solicitar', ['expediente' => $expediente, 'fecha' => $fecha]);
     }
@@ -431,30 +555,45 @@ class ExpedientesSuperController extends Controller
         $fecha_devolucion = $request->input('fecha_devolucion');
         $motivo = $request->input('motivo');
         
-        // Obtiene la fecha actual
-        $fecha_solicitud = now();
+        date_default_timezone_set('America/Mexico_City');
+        $fecha_solicitud = date('Y-m-d');
 
-        //$usuario = Auth::user();
-        //$idUsuarioSistema = $usuario->idUsuarioSistema;
-        //$nombre = $usuario->nombre;
-        $idUsuarioSistema = 1;
+        $idUsuarioSistema = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+            ->value('idUsuarioSistema');
+
+            $idUsuarioSolicita = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // USUARIO QUE SOLICITAS
+            ->value('idUsuarioSistema');
+
+            $nombreusuariorealiza = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // USUARIO QUE SOLICITA
+            ->select(DB::raw('CONCAT(nombre, " ", apellidos) as nombreCompleto'))
+            ->value('nombreCompleto');
+        
     
         // Crea un nuevo registro en la tabla actividad_expediente
         DB::table('actividad_expedientes')->insert([
-            'id_usuario_otorga' => 1, // Valor fijo
-            'id_usuario_solicita' => $idUsuarioSistema, // Valor fijo
+            'id_usuario_otorga' => $idUsuarioSistema, // Valor fijo
+            'id_usuario_solicita' => $idUsuarioSistema, 
             'fecha_solicitud' => $fecha_solicitud,
             'fecha_devolucion' => $fecha_devolucion,
             'motivo' => $motivo,
+            'movimiento' => 'Prestamo',
             'id_expediente' => $id_expediente,
             'estado'=>'En uso',
+            'id_usuario_realiza'=>$nombreusuariorealiza,
         ]);
 
         DB::table('expedientes')
         ->where('id_expediente', $id_expediente)
-        ->update(['estado' => 'En uso']);
+        ->update(['estado' => 'En uso'
+        , 'usuario_posee' => $idUsuarioSolicita
+        ]);
+
+        session()->flash('success', 'Actividad registrada correctamente');
     
-        return redirect()->route('homeAdminExpedientes')->with('success', 'Actividad almacenada correctamente');
+        return redirect()->route('homeAdminExpedientes');
     }
 
     public function almacenarActividadUsuarioBasico(Request $request)
@@ -465,46 +604,47 @@ class ExpedientesSuperController extends Controller
         $motivo = $request->input('motivo');
         $id_usuario = $request->input('id_usuario');
         
-        // Obtiene la fecha actual
-        $fecha_solicitud = now();
+        date_default_timezone_set('America/Mexico_City');
+        $fecha_solicitud = date('Y-m-d');
 
-        //$usuario = Auth::user();
-        //$idUsuarioSistema = $usuario->idUsuarioSistema;
-        //$nombre = $usuario->nombre;
-        $idUsuarioSistema = 7;
+        $idUsuarioSistema = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+            ->value('idUsuarioSistema');
+
+            $idUsuarioSolicita = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // USUARIO QUE SOLICITAS
+            ->value('idUsuarioSistema');
+
+            $nombreusuariorealiza = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // USUARIO QUE SOLICITA
+            ->select(DB::raw('CONCAT(nombre, " ", apellidos) as nombreCompleto'))
+            ->value('nombreCompleto');
     
         // Crea un nuevo registro en la tabla actividad_expediente
         DB::table('actividad_expedientes')->insert([
-            'id_usuario_otorga' => 1, // Valor fijo
+            'id_usuario_otorga' => $idUsuarioSistema, // Valor fijo
             'id_usuario_solicita' => $idUsuarioSistema, // Valor fijo
             'fecha_solicitud' => $fecha_solicitud,
             'fecha_devolucion' => $fecha_devolucion,
             'motivo' => $motivo,
+            'movimiento' => 'Prestamo',
             'id_expediente' => $id_expediente,
             'estado'=>'En uso',
+            'id_usuario_realiza'=>$nombreusuariorealiza,
         ]);
 
         DB::table('expedientes')
         ->where('id_expediente', $id_expediente)
-        ->update(['estado' => 'En uso']);
+        ->update(['estado' => 'En uso'
+        , 'usuario_posee' => $idUsuarioSolicita
+        ]);
 
 
-        return redirect()->route('expedientesBasico',$id_usuario)->with('success', 'Actividad almacenada correctamente');
+        session()->flash('success', 'Actividad almacenada correctamente');
+        return redirect()->route('expedientesBasico',$id_usuario);
     }
 
-    public function homeExpedientesUB($id_usuario) {
-        $elementos = DB::table('expedientes')
-        ->orderBy('fecha_creacion', 'desc')
-        ->get();
-        
-        // Recorrer los elementos y truncar los campos "descripcion" y "nombre de expediente"
-        foreach ($elementos as $elemento) {
-            $elemento->descripcion = mb_substr($elemento->descripcion, 0, 25); // Truncar a 25 caracteres
-            $elemento->nombre = mb_substr($elemento->nombre, 0, 25); // Truncar a 25 caracteres
-        }
-    
-        return view('expedientes.expedientes.homeExpedientesListadoUB', ['elementos' => $elementos, 'id_usuario' => $id_usuario]);
-    }
+
 
     
     

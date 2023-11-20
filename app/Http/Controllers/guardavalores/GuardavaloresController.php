@@ -13,8 +13,57 @@ class GuardavaloresController extends Controller
 {
 
     public function __construct(){
-        $this->middleware('auth');
+        $this->middleware('auth')->except('storeAPI');
     }
+
+    public function storeAPI(Request $request) {
+
+        $validatedData = $request->validate([
+            'numero_contrato' => 'required',
+            'numero_pagare' => 'required',
+            'fechaTerminacion' => 'required',
+            'monto' => 'required',
+            'fechaEntrega' => 'required',
+            'numero_credito' => 'required',
+            'funcionario' => 'string',
+            'id_cliente' => 'required',
+        ]);
+
+        $fecha_creacion = Carbon::now('America/Mexico_City')->toDateTimeString();
+
+        $usuario_creador = 1;
+
+        $id_pagare = DB::table('guardavalores')->insertGetId([
+            'nombre' => 'Pagare '.$validatedData['numero_pagare'],
+            'numero_contrato' => $validatedData['numero_contrato'],
+            'numero_pagare' => $validatedData['numero_pagare'],
+            'fecha_terminacion' => $validatedData['fechaTerminacion'],
+            'fecha_entrega' => $validatedData['fechaEntrega'],
+            'funcionario' => $validatedData['funcionario'],
+            'estado' => 'Disponible',
+            'tipo_gv' => 'Pagare',
+            'id_cliente' =>  $request->id_cliente,
+            'usuario_creador' => $usuario_creador,
+            'fecha_creacion' => $fecha_creacion,
+            'monto' => $validatedData['monto'],
+            'numero_credito' => $validatedData['numero_credito'],
+            'usuario_posee' => 0,
+        ]);
+
+        DB::table('actividad_guardavalores')->insert([
+            'id_documento' => $id_pagare,
+            'id_usuario' => $usuario_creador,
+            'fecha_ingreso' => $fecha_creacion,
+            'fecha_actividad' => $fecha_creacion, 
+            'estado' => 'Ingreso',
+            'movimiento' => 'Ingreso',
+            'motivo' => 'Ingreso',
+            'tipo_gv' => 'Pagare'
+        ]);
+
+        return response()->json(['message' => 'Pagare guardado con éxito en sistema Alamos'], 201);
+    }
+
 
     public function editarGV($id){
         $gv = DB::table('guardavalores')->where('id_documento',$id)->first();
@@ -105,9 +154,8 @@ class GuardavaloresController extends Controller
         $user = DB::table('users')
         ->where('idUsuarioSistema', auth()->id())->first();
         $idUser = $user->id;
+        $nombre = $user->nombre;
         $idRol = $user->rol;
-
-        echo 'EL ID DEL USUARIO ES: '.$idUser. 'CON EL ROL'. $idRol.' EN GUARDAVALOREES CONTROLLER';
 
         $consulta = DB::table('users')
         ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
@@ -121,7 +169,10 @@ class GuardavaloresController extends Controller
         $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
         }
 
-        $elementos = DB::table('actividad_guardavalores')->get();
+        $elementos = DB::table('actividad_guardavalores')
+        ->orderBy('fecha_actividad', 'desc')
+        ->get();
+        
         $elementosActualizados = [];
     
         foreach ($elementos as $elemento) {
@@ -148,7 +199,7 @@ class GuardavaloresController extends Controller
             $elementosActualizados[] = (object) $elementoOriginal;
         }
 
-        return view('guardavalores.home', ['idRol' => $idRol, 'elementos' => $elementosActualizados, 'listadoPermisos' => $permisosUsuario]);
+        return view('guardavalores.home', ['nombre' => $nombre, 'idRol' => $idRol, 'elementos' => $elementosActualizados, 'listadoPermisos' => $permisosUsuario]);
     
     }
 
@@ -158,34 +209,48 @@ class GuardavaloresController extends Controller
         $id_gv = $request->input('id_gv');
         
         if (is_numeric($id_gv)) {
-
             $gv = DB::table('guardavalores')
             ->where('numero_contrato', $id_gv)
             ->get();
-
         } else {
-
             $gv = DB::table('guardavalores')
             ->where('nombre', 'LIKE', "%$id_gv%")
             ->get();
-
         }
     
         if ($gv->isEmpty()) {
-            return redirect()->route('homeGV')->with('error', 'No se encontró ningún documento con el ID proporcionado.');
+            session()->flash('info', 'No se encontró documento.');
+            return redirect()->route('homeGV');
         }
+
+        $idUser = DB::table('users')
+        ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+        ->value('idUsuarioSistema');
+
+    $consulta = DB::table('users')
+    ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
+    ->where('idUsuarioSistema', $idUser)
+    ->first();
+
+    $permisos = (array) $consulta;
+    $permisosUsuario = [];
+
+    foreach ($permisos as $indice => $valor) {
+    $permisosUsuario[] = ['indice' => $indice, 'valor' => $valor];
+    }
     
-        return view('guardavalores.guardavalores.home', ['elementos' => $gv]);
+        return view('guardavalores.guardavalores.home', ['elementos' => $gv, 'permisosUsuario' => $permisosUsuario]);
     }
 
 
     public function homeGV(){
 
         $elementos = DB::table('guardavalores')
-        ->where('nombre', '!=', '') // Solo registros donde el nombre no está vacío
         ->get();
 
-        $idUser = 1;
+        $idUser = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+            ->value('idUsuarioSistema');
 
         $consulta = DB::table('users')
         ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
@@ -237,8 +302,10 @@ class GuardavaloresController extends Controller
         }
 
     }
+        
 
     public function storePagare(Request $request){
+
         $validatedData = $request->validate([
             'numero_contrato' => 'required',
             'numero_pagare' => 'required',
@@ -246,39 +313,45 @@ class GuardavaloresController extends Controller
             'funcionario' => 'string',
             'monto' => 'required',
             'fechaEntrega' => 'required',
+            'numero_credito' => 'required',
         ]);
 
         $fecha_creacion = Carbon::now('America/Mexico_City')->toDateTimeString();
-        $usuario_creador = 1;
+
+        $usuario_creador = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id())
+            ->value('idUsuarioSistema');
 
         $id_pagare = DB::table('guardavalores')->insertGetId([
             'nombre' => 'Pagare '.$validatedData['numero_pagare'],
             'numero_contrato' => $validatedData['numero_contrato'],
             'numero_pagare' => $validatedData['numero_pagare'],
             'fecha_terminacion' => $validatedData['fechaTerminacion'],
-            'fecha_terminacion' => $validatedData['fechaEntrega'],
+            'fecha_entrega' => $validatedData['fechaEntrega'],
             'funcionario' => $validatedData['funcionario'],
             'estado' => 'Disponible',
             'tipo_gv' => 'Pagare',
             'id_cliente' =>  $request->id_cliente,
             'usuario_creador' => $usuario_creador,
             'fecha_creacion' => $fecha_creacion,
-            'monto' => $validatedData['monto']
+            'monto' => $validatedData['monto'],
+            'numero_credito' => $validatedData['numero_credito'],
+            'usuario_posee' => 0,
         ]);
 
         DB::table('actividad_guardavalores')->insert([
             'id_documento' => $id_pagare,
-            'id_usuario' => 1,
+            'id_usuario' => $usuario_creador,
             'fecha_ingreso' => $fecha_creacion,
             'fecha_actividad' => $fecha_creacion, 
             'estado' => 'Ingreso',
             'movimiento' => 'Ingreso',
             'motivo' => 'Ingreso',
             'tipo_gv' => 'Pagare'
-        ]);        
+        ]);
 
-        return redirect()->route('homeClientesGV')->with('success', 'Documento asignado correctamente');
-
+        session()->flash('success', 'El pagare '.$validatedData['numero_pagare'].' del contrato '.$validatedData['numero_contrato'].' se registro correctamente.');
+        return redirect()->route('homeGV');
 
     }
 
@@ -289,11 +362,17 @@ class GuardavaloresController extends Controller
             'nombre_contrato' => 'required',
             'fechaEntrega' => 'required',
             'funcionario' => 'required',
-            'observaciones' => 'required',
+            'vigencia' => 'required',
         ]);
 
+        $observaciones = $request->observaciones ?? "Sin observaciones";
+
+
         $fecha_creacion = Carbon::now('America/Mexico_City')->toDateTimeString();
-        $usuario_creador = 1;
+
+        $usuario_creador = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+            ->value('idUsuarioSistema');
 
         $id_c = DB::table('guardavalores')->insertGetId([
             'nombre' => $validatedData['nombre_contrato'],
@@ -301,16 +380,18 @@ class GuardavaloresController extends Controller
             'fecha_entrega' => $validatedData['fechaEntrega'],
             'funcionario' => $validatedData['funcionario'],
             'estado' => 'Disponible',
-            'descripcion' => 'observaciones',
+            'descripcion' => $observaciones,
             'tipo_gv' => 'Contrato',
             'id_cliente' =>  $request->id_cliente,
             'usuario_creador' => $usuario_creador,
-            'fecha_creacion' => $fecha_creacion
+            'fecha_creacion' => $fecha_creacion,
+            'vigencia' => $validatedData['vigencia'],
+            'usuario_posee' => 0,
         ]);
 
         DB::table('actividad_guardavalores')->insert([
             'id_documento' => $id_c,
-            'id_usuario' => 1,
+            'id_usuario' => $usuario_creador,
             'fecha_ingreso' => $fecha_creacion,
             'fecha_actividad' => $fecha_creacion, 
             'estado' => 'Ingreso',
@@ -318,68 +399,127 @@ class GuardavaloresController extends Controller
             'motivo' => 'Ingreso',
             'tipo_gv' => 'Contrato'
         ]);        
+        session()->flash('Success', 'El contrato '.$validatedData['numero_contrato'].' se registro correctamente.');
 
-        return redirect()->route('homeClientesGV')->with('success', 'Documento asignado correctamente');
+        return redirect()->route('homeGV')->with('success', 'Documento asignado correctamente');
 
     }
        
 
-    public function storeDV(Request $request){
+    public function documentoGVX($id_cliente, $nombre){
+        $cliente = DB::table('clientes_guardavalores')
+        ->where('id_cliente',$id_cliente)
+        ->first();
 
-        $validatedData = $request->validate([
-            'nombreExpediente' => 'required',
-            'descripcion' => 'required',
-            'tipoCredito' => 'string',
-            'fecha_devolucion' => 'required',
-            'funcionario' => 'string',
-            'folioReal' => 'string',
-        ]);
-
-        //$fecha_creacion = date("Y-m-d H:i:s");
-        $fecha_creacion = Carbon::now('America/Mexico_City')->toDateTimeString();
-
-        $usuario_creador = 1;
-
-        $id_guardavalores = DB::table('guardavalores')->insertGetId([
-            'nombre' => $validatedData['nombreExpediente'],
-            'numero_contrato' => $validatedData['descripcion'],
-            'folio_real' => $validatedData['folioReal'],
-            'tipo_credito' => $validatedData['tipoCredito'],
-            'fecha_entrega' => $validatedData['fecha_devolucion'],
-            'funcionario' => $validatedData['funcionario'],
-            'fecha_creacion' => $fecha_creacion,
-            'estado' => 'Disponible',
-            'tipo_gv' => 'Contrato',
-            'id_cliente' =>  $request->id_cliente,
-            'usuario_creador' => $usuario_creador,
-        ]);
-
-        DB::table('actividad_guardavalores')->insert([
-            'id_documento' => $id_guardavalores,
-            'id_usuario' => 1,
-            'fecha_ingreso' => $fecha_creacion,
-            'fecha_actividad' => $fecha_creacion, 
-            'estado' => 'Ingreso',
-            'movimiento' => 'Ingreso',
-            'motivo' => 'Ingreso',
-            'tipo_gv' => 'Contrato'
-        ]);        
-
-        return redirect()->route('homeClientesGV')->with('success', 'Documento asignado correctamente');
-
+        if ($cliente) {
+            $fecha = now()->format('Y-m-d');
+            return view('guardavalores.guardavalores.crearDV', ['cliente' => $cliente, 'fecha'=>$fecha, 'nombreTipo' =>$nombre]);
     }
+   }
+
+   public function storeDV(Request $request) {
+    // Obtén los datos directamente del objeto Request
+    $tipoCredito = $request->input('tipoCredito');
+    $fechaEntrega = $request->input('fechaEntrega');
+    $fechaActa = $request->input('fechaActa');
+    $funcionario = $request->input('funcionario');
+    $folioReal = $request->input('folioReal');
+    $descripcion = $request->input('descripcion');
+    $id_cliente = $request->input('id_cliente');
+    $numeroEscritura = $request->input('numeroEscritura');
+    $cantidad = $request->input('cantidad');
+    $nombreTipo = $request->input('nombreTipo');
+    $nombreDocumento = $request->input('nombreDocumento');
+
+    if (empty($nombreDocumento)) {
+        $nombreDocumento = $nombreTipo;
+    }
+
+    $vigencia = $request->input('vigencia');
+    $numeroContrato =  $request->input('numeroContrato');
+    $persona_expide = $request->input('personaExpide');
+    $numero_cheque = $request->input('numeroCheque');
+    $fecha_cheque = $request->input('fechaCheque');
+    $monto = $request->input('monto');
+    $idCredito = $request->input('idCredito');
+    $rfc= $request->input('rfc');
+    $folioFiscal= $request->input('folioFiscal');
+    $concepto= $request->input('concepto');
+    $numeroCertificado= $request->input('numeroCertificado');
+    $kilos= $request->input('kilos');
+    $aFavor = $request->input('aFavor');
+
+    // Obtén la fecha de creación
+    $fecha_creacion = Carbon::now('America/Mexico_City')->toDateTimeString();
+
+    // Obtén el ID del usuario creador
+    $usuario_creador = auth()->id();
+
+    // Inserta los datos en la base de datos
+    $id_guardavalores = DB::table('guardavalores')->insertGetId([
+        'nombre' => $nombreDocumento,
+        'numero_contrato' => $numeroContrato,
+        'folio_real' => $folioReal,
+        'tipo_credito' => $tipoCredito,
+        'fecha_entrega' => $fechaEntrega,
+        'fecha_acta' => $fechaActa,
+        'funcionario' => $funcionario,
+        'fecha_creacion' => $fecha_creacion,
+        'estado' => 'Disponible',
+        'tipo_gv' => $nombreTipo,
+        'id_cliente' => $id_cliente,
+        'usuario_creador' => $usuario_creador,
+        'numeroEscritura' => $numeroEscritura,
+        'cantidad' => $cantidad,
+        'vigencia' => $vigencia,
+        'numero_cheque' => $numero_cheque,
+        'fechaCheque' => $fecha_cheque,
+        'persona_expide' => $persona_expide,
+        'descripcion' => $descripcion,
+        'monto' => $monto,
+        'idCredito' => $idCredito,
+        'rfc' => $rfc,
+        'folioFiscal' => $folioFiscal,
+        'concepto' => $concepto,
+        'aFavor' => $aFavor,
+        'numeroCertificado' => $numeroCertificado,
+        'kilos' => $kilos,
+    ]);
+
+    // Inserta actividad de guardavalores
+    DB::table('actividad_guardavalores')->insert([
+        'id_documento' => $id_guardavalores,
+        'id_usuario' => $usuario_creador,
+        'fecha_ingreso' => $fecha_creacion,
+        'fecha_actividad' => $fecha_creacion, 
+        'estado' => 'Ingreso',
+        'movimiento' => 'Ingreso',
+        'motivo' => 'Ingreso',
+        'tipo_gv' => $nombreTipo,
+    ]);
+
+    session()->flash('success', 'El documento de valor se registró correctamente.');
+
+    return redirect()->route('homeGV')->with('success', 'Documento asignado correctamente');
+}
+
 
     public function retirarGV($id_d) {
     
-        $idUser = 1;
-        $idRol = 3;
+        $idUser = DB::table('users')
+            ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+            ->value('idUsuarioSistema');
+            
+        $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
+
+        $idRol = $user->rol;
 
         $elementos = DB::table('guardavalores')
         ->where('id_documento', $id_d)
         ->first();
 
     if(!$elementos) {
-        return redirect()->route('homeGV')->with('error', 'No se encontró ningún documento con el contrato proporcionado.');
+        return redirect()->route('homeGV');
     } else {
 
         $nombreCliente = DB::table('clientes_guardavalores')
@@ -394,12 +534,99 @@ class GuardavaloresController extends Controller
 
     }
 
+        
+    public function reingresar($id_documento){
+
+        $idUser = DB::table('users')
+        ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+        ->value('idUsuarioSistema');
+        
+    $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
+
+    $idRol = $user->rol;
+
+    $elementos = DB::table('guardavalores')
+    ->where('id_documento', $id_documento)
+    ->first();
+
+    $usuario = DB::table('users')
+    ->where('idUsuarioSistema', $elementos->usuario_posee)
+    ->select('nombre', 'apellidos') // Selecciona nombre y apellidos
+    ->first();
+
+    if ($usuario) {
+    // El usuario se encontró, por lo que se usa el nombre y los apellidos
+    $nombrePoseedor = $usuario->nombre . ' ' . $usuario->apellidos;
+    } else {
+    // El usuario no se encontró, por lo que se utiliza "General"
+    $nombrePoseedor = "General";
+    }
+
+
+    if(!$elementos) {
+    return redirect()->route('homeGV');
+    } else {
+
+    $nombreCliente = DB::table('clientes_guardavalores')
+        ->where('id_cliente', $elementos->id_cliente)
+        ->value('nombre');
+
+    // Actualizar los campos necesarios
+    $elementos->id_cliente = $nombreCliente;
+    $elementos->usuario_posee = $nombrePoseedor;
+
+    return view('guardavalores.guardavalores.reingresar', ['idRol' => $idRol, 'expediente' => $elementos]);
+    }
+    
+   }
+
+   
+   public function reingresoActividad(Request $request){
+
+    $idUsuario = DB::table('users')
+    ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+    ->value('idUsuarioSistema');
+
+    $tipo_gv = $request->tipo_gv;
+    $movimiento = 'Reingreso';
+    $id_doc = $request->id_documento;
+    $motivo = $request->motivo;
+    $fecha = Carbon::now('America/Mexico_City')->toDateTimeString();
+
+    $id_actGV= DB::table('actividad_guardavalores')->insertGetId([
+        'tipo_gv' => $tipo_gv,
+        'id_documento' => $id_doc,
+        'estado' => 'Disponible',
+        'movimiento' => $movimiento,
+        'motivo' => $motivo,
+        'id_usuario' => $idUsuario,
+        'fecha_actividad' => $fecha,
+        'usuario_solicita' => $idUsuario,
+      ]);
+
+      DB::table('guardavalores')
+      ->where('id_documento', $id_doc)
+      ->update([
+          'estado' => 'Disponible',
+          'usuario_posee' => 0
+      ]);
+  
+      session()->flash('info', 'Se reingreso el documento');
+      return redirect()->route('homeGV');
+
+
+   }
     
     public function almacenarActividadGV(Request $request){
       $tipo_gv = $request->tipo_gv;
-      $idUsuario =1;
+
+      $idUsuario = DB::table('users')
+      ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+      ->value('idUsuarioSistema');
+      
       $estado = 'Retirado';
       $movimiento = 'Retiro';
+      $usuario_posee = $idUsuario; //USUARIO QUE RETIRO EL DOCUMENTO GV, ES QUE LO SOLICITO Y CONFIRMO CON HUELLA
       $id_doc = $request->id_documento;
       $motivo = $request->motivo;
 
@@ -412,24 +639,31 @@ class GuardavaloresController extends Controller
         'movimiento' => $movimiento,
         'motivo' => $motivo,
         'id_usuario' => $idUsuario,
-        'fecha_actividad' => $fecha
+        'fecha_actividad' => $fecha,
+        'usuario_solicita' => $usuario_posee
       ]);
 
-    DB::table('guardavalores')
+      DB::table('guardavalores')
     ->where('id_documento', $id_doc)
-    ->update(['estado' => 'Retirado']);
+    ->update([
+        'estado' => 'Retirado',
+        'usuario_posee' => $usuario_posee
+    ]);
 
-    return redirect()->route('homeGV')->with('error', 'Documento retirado.');
+    session()->flash('info', 'Se retiró el documento.');
+    return redirect()->route('homeGV');
 
     }
 
 
     public function consultarGV($id_c) {
 
-        $idUser = 1;
-        $idRol = 3;
-    
-        echo 'EL ID DEL USUARIO ES: '.$idUser;
+        $idUser = DB::table('users')
+        ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+        ->value('idUsuarioSistema');
+        
+        $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
+        $idRol = $user->rol;
     
         $consulta = DB::table('users')
             ->select('registrarGuardavalores', 'retirarGuardavalores', 'editarGuardavalores', 'consultarGuardavalores', 'reportesGuardavalores')
@@ -448,7 +682,7 @@ class GuardavaloresController extends Controller
             ->first();
     
         if(!$elementos) {
-            return redirect()->route('homeGV')->with('error', 'No se encontró ningún documento con el contrato proporcionado.');
+            return redirect()->route('homeGV')->with('error', 'No se encontró ningún documento.');
         } else {
     
             $nombreCliente = DB::table('clientes_guardavalores')
@@ -459,9 +693,20 @@ class GuardavaloresController extends Controller
                 ->where('idUsuarioSistema', $elementos->usuario_creador)
                 ->select('nombre', 'apellidos', 'idUsuarioSistema')
                 ->first();
+
+            $datosUsuario_poseee = DB::table('users')
+                ->where('idUsuarioSistema', $elementos->usuario_posee)
+                ->select('nombre', 'apellidos', 'idUsuarioSistema')
+                ->first();
+                
+                if (!$datosUsuario_poseee) {
+                    $datosUsuario_poseee = "En almacen";
+                } else {
+                    $datosUsuario_poseee = $datosUsuario_poseee->nombre . ' ' . $datosUsuario_poseee->apellidos . ' (' . $datosUsuario_poseee->idUsuarioSistema . ')';
+                }
     
-            $nombreCliente = $datosUsuario->nombre . ' ' . $datosUsuario->apellidos . ' (' . $datosUsuario->idUsuarioSistema . ')';
-    
+            //$nombreCliente = $datosUsuario->nombre . ' ' . $datosUsuario->apellidos . ' (' . $datosUsuario->idUsuarioSistema . ')';
+            $nombreCliente = $nombreCliente;
   
             $campos = ['fecha_creacion', 'fecha_entrega', 'fecha_terminacion'];
 
@@ -475,7 +720,8 @@ class GuardavaloresController extends Controller
     
             // Actualizar los campos necesarios
             $elementos->id_cliente = $nombreCliente;
-            $elementos->usuario_creador = $nombreCliente;
+            $elementos->usuario_posee = $datosUsuario_poseee;
+            $elementos->usuario_creador = $datosUsuario;
     
             return view('guardavalores.guardavalores.detalles', ['idRol' => $idRol, 'expediente' => $elementos, 'permisosUsuario' => $permisosUsuario]);
     

@@ -18,7 +18,8 @@
 
     <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreCliente">
-          {{$cliente->nombre}} ({{$cliente->id_cliente}})
+          ACREDITADO: {{$cliente->nombre}} <br>
+          <!--Número de cliente: {{$cliente->id_cliente}}-->
         </label>
       </div>
 
@@ -44,17 +45,25 @@
     </div>
 
     <div class="grid grid-cols-3 gap-4 mb-4">
+   
+        <div class="col-span-1">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="vigencia">
+                Vigencia
+            </label>
+            <input type="date" id="vigencia" name="vigencia" class="w-full p-2 border border-gray-300 rounded" required>
+        </div>
+
         <div class="col-span-1">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="funcionario">
                 Funcionario
             </label>
             <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="funcionario" type="text" name="funcionario" placeholder="Funcionario" required>
         </div>
-        <div class="col-span-2">
+        <div class="col-span-1">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="observaciones">
                 Observaciones
             </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="observaciones" type="text" name="observaciones" placeholder="Observaciones" required>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="observaciones" type="text" name="observaciones" placeholder="Observaciones">
         </div>
     </div>
 

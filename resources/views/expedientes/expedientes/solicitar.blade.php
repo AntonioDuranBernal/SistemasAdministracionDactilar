@@ -10,7 +10,7 @@
 <div class="container mx-auto p-4 grid gap-4">
     <div class="md:col-span-1 md:flex md:flex-col md:justify-center md:items-center">
   
-    <h1 class="text-2xl font-bold mb-4 text-center md:text-left">{{$expediente->nombre}}</h1>
+    <h1 class="text-2xl font-bold mb-4 text-center md:text-left">Solicitud de Tomo {{$expediente->nombre}}</h1>
     
     <!-- Campo oculto para enviar el ID del cliente -->
     <input type="hidden" name="id_expediente" value="{{ $expediente->id_expediente}}">
@@ -23,12 +23,12 @@
     
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreCliente">
-              Número de Expediente: {{$expediente->id_expediente}}
+              Número de Tomo: {{$expediente->nombre}}
             </label>
         </div>
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreCliente">
-              Cliente propietario: {{$expediente->id_cliente}}
+              Expediente: {{$expediente->id_cliente}}
             </label>
         </div>
 
@@ -57,6 +57,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 <script>
 
+
 document.addEventListener('DOMContentLoaded', function () {
     flatpickr("#fechaDevolucion", {
         enableTime: false,
@@ -67,12 +68,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Validación personalizada de fecha
     document.getElementById("actividadForm").addEventListener("submit", function (event) {
         var fechaDevolucion = document.getElementById("fechaDevolucion").value;
-        var fechaMinima = "<?php echo $fecha; ?>";
+        var fechaActual = new Date(); // Obtiene la fecha actual
+
+// Formatea la fecha actual en el mismo formato que fechaDevolucion
+var fechaActualFormateada = fechaActual.toISOString().slice(0, 10);
 
         if (fechaDevolucion === "") {
             alert("Debes seleccionar una fecha de devolución.");
             event.preventDefault(); // Evita que se envíe el formulario
-        } else if (fechaDevolucion < fechaMinima) {
+        } else if (fechaDevolucion < fechaActualFormateada) {
             alert("La fecha de devolución debe ser mayor o igual a la fecha actual.");
             event.preventDefault(); // Evita que se envíe el formulario
         }

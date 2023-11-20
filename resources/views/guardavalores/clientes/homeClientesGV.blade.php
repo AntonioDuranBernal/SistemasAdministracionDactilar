@@ -28,13 +28,66 @@
       border-radius: 3px; /* Borde redondeado del pulgar */
     }
   </style>
+
+<script>
+    
+        setTimeout(function () {
+        var successMessage = document.querySelector('.alert-error');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+    }, 5000); // 10000 milisegundos = 10 segundos
+
+            // Espera 10 segundos y luego oculta el mensaje de éxito
+            setTimeout(function () {
+        var successMessage = document.querySelector('.alert-success');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+    }, 5000); // 10000 milisegundos = 10 segundos
+
+            // Espera 10 segundos y luego oculta el mensaje de éxito
+            setTimeout(function () {
+        var successMessage = document.querySelector('.alert-info');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+    }, 5000); // 10000 milisegundos = 10 segundos
+
+</script>
+
 </head>
 <body>
 
 <div class="flex justify-center items-center space-x-4">
     <div class="w-full sm:w-4/5 md:w-4/5 lg:w-7/8 p-4 mb-1">
 
+
+    @if(session('info'))
+    <div class="alert-info bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Información:</strong>
+        <span class="block sm:inline">{{ session('info') }}</span>
+    </div>
+   @endif
+
+    @if(session('success'))
+    <div class="alert-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Éxito!</strong>
+        <span class="block sm:inline">{{ session('success') }}</span>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Error!</strong>
+        <span class="block sm:inline">{{ session('error') }}</span>
+    </div>
+    @endif
+
+
+
     <div class="grid grid-cols-12 gap-4">
+
         <div class="col-span-2 flex-grow flex-shrink p-6">
             <a href="{{ route('homeAdminGuardavalores') }}">
                 <button class="w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-4">Volver</button>
@@ -66,42 +119,45 @@
     <h1 class="text-2xl font-bold mb-4 text-center">CLIENTES REGISTRADOS</h1>
 
     @if(count($elementos) > 0)
-    <div class="custom-scroll">
-        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <div class="text-left">
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                    <th scope="col" class="px-6 py-3">
-                        Nombre de cliente
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Número de Cliente
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        <span class="sr-only">Opción</span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($elementos as $elemento)
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                        {{$elemento->nombre}}
-                    </td>   
-                    <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                        {{$elemento->id_cliente}}
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <a href="{{route('cliente.asignadosGV', $elemento->id_cliente)}}">Asignados</a>
+    <tr>
+        <th scope="col" class="px-6 py-3" style="width: 15%;">Número <br>de Cliente</th>
+        <th scope="col" class="px-6 py-3" style="width: 35%;">Nombre de Cliente</th>
+        <th scope="col" class="px-6 py-3" style="width: 35%;">ID Cliente Giro</th>
+        <th scope="col" class="px-6 py-3" style="width: 15%;"></th>
+    </tr>
+</thead>
+    </table>
+            </div>
+                    
+                    
+    <div class="custom-scroll">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <tbody>
 
-                        @if(collect($permisosUsuario)->where('indice', 'registrarGuardavalores')->first()['valor'] == 1)
-                        <a href="{{route('clienteNuevoGV', $elemento->id_cliente)}}">Asignar</a>
-                        @endif
-
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+    @foreach($elementos as $elemento)
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                {{$elemento->id_cliente}}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap dark:text-white" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                {{$elemento->nombre}}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap dark:text-white">
+                {{$elemento->id_clienteGiro}}
+            </td>
+            <td class="px-6 py-4 text-right">
+                <a href="{{route('cliente.asignadosGV', $elemento->id_cliente)}}">Asignados</a>
+                @if(collect($permisosUsuario)->where('indice', 'registrarGuardavalores')->first()['valor'] == 1)
+                <a href="{{route('clienteNuevoGV', $elemento->id_cliente)}}">Asignar</a>
+                @endif
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
     </div>
     @else
     <img src="imagenes/los_alamos_sinfondo.png" alt="Sin registros" class="mx-auto mt-8">

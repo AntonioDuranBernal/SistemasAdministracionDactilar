@@ -24,12 +24,12 @@
     
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreCliente">
-              Número de Expediente: {{$expediente->id_expediente}}
+              Número de Tomo: {{$expediente->id_expediente}}
             </label>
           </div>
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="nombreCliente">
-              Cliente propietario: {{$expediente->id_cliente}}
+              Expediente: {{$expediente->id_cliente}}
             </label>
           </div>
     
@@ -70,12 +70,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Validación personalizada de fecha
     document.getElementById("actividadForm").addEventListener("submit", function (event) {
         var fechaDevolucion = document.getElementById("fechaDevolucion").value;
-        var fechaMinima = "<?php echo $fecha; ?>";
+        var fechaActual = new Date(); // Obtiene la fecha actual
+
+        // Formatea la fecha actual en el mismo formato que fechaDevolucion
+        var fechaActualFormateada = fechaActual.toISOString().slice(0, 10);
 
         if (fechaDevolucion === "") {
             alert("Debes seleccionar una fecha de devolución.");
             event.preventDefault(); // Evita que se envíe el formulario
-        } else if (fechaDevolucion < fechaMinima) {
+        } else if (fechaDevolucion < fechaActualFormateada) {
             alert("La fecha de devolución debe ser mayor o igual a la fecha actual.");
             event.preventDefault(); // Evita que se envíe el formulario
         }

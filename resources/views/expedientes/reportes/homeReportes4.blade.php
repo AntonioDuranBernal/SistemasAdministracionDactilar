@@ -102,22 +102,25 @@
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">
-                            Número de<br>Expediente
+                            Expediente
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Nombre de Expediente
+                            Tomo
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Usuario Solicitud
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Motivo <br> de prestamo
+                            Movimiento
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Fecha Solicitud
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Fecha Devolucion
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Fecha Entrega
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Estado
@@ -128,7 +131,7 @@
                     @foreach($elementos as $elemento)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                     <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                           {{$elemento->id_expediente}}
+                           {{$elemento->tomo}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
                            {{$elemento->id_usuario_otorga}}
@@ -137,17 +140,33 @@
                             {{$elemento->id_usuario_solicita}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->motivo}}
+                            {{$elemento->Movimiento}}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->fecha_solicitud}}
-                        </td>
+    @if ($elemento->fecha_solicitud)
+        {{ $elemento->fecha_solicitud }}
+    @else
+        ---
+    @endif
+</td>
+<td class="px-6 py-4 whitespace-nowrap dark:text-white">
+    @if ($elemento->fecha_devolucion)
+        {{ $elemento->fecha_devolucion }}
+    @else
+        ---
+    @endif
+</td>
+
                         <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->fecha_devolucion}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap dark:text-white">
-                            {{$elemento->estado}}
-                        </td>
+    @if ($elemento->fecha_entrega)
+        {{ $elemento->fecha_entrega }}
+    @else
+        ---
+    @endif
+</td>
+<td class="px-6 py-4 whitespace-nowrap dark:text-white {{ $elemento->estado === 'Devolución atrasada' ? 'text-red-500' : '' }}">
+    {{ $elemento->estado }}
+</td>
                     </tr>
                     @endforeach
                 </tbody>

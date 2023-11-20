@@ -48,32 +48,79 @@
             </div>
         </div>
 
+
         <form action="{{ route('ejecutarDocumentoGV') }}" method="POST" class="mb-4">
             @csrf
             <input type="hidden" name="elementos" value="{{ json_encode($elementos) }}">
 
             <div class="flex justify-center">
-                <div class="w-1/3">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="id_documento">
-                        Documento
-                    </label>
-                    <select id="id_documento" name="id_documento" class="w-full p-2 border border-gray-300 rounded">
-                        <option value="">Documento</option>
-                        @foreach ($listaDocumentos as $documento)
-                            <option value="{{ $documento->id_documento }}">{{ $documento->id_documento }} - {{ $documento->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
+
+                <div class="w-2/3 pr-4 relative">
+
+        <label for="expedienteList" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cliente</label>
+        <div class="flex">
+            <div class="w-full mr-2">
+                <select id="expedienteList" name="id_consecutivo" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    @foreach ($clientes as $cliente)
+                        @if ($cliente->id_cliente !== null && $cliente->id_cliente !== 0)
+                        <option value="{{ $cliente->id_cliente }}">{{ $cliente->nombre }}</option>
+                        @endif
+                    @endforeach
+                </select>
             </div>
+            <div>
+                <button type="submit" class="mt-1  w-full bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm py-2 px-4" onclick="seleccionarExpediente()">Seleccionar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="w-1/3 mx-1">                    
+    <label for="gv" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Guardavalor</label>
+    <div class="flex">
+        <div class="w-full mr-2">
+            @if(isset($dcs))
+                <select id="gv" name="gv" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    @foreach ($dcs as $gv)
+                        @if ($gv->id_documento !== null && $gv->id_documento !== 0)
+                            <option value="{{ $gv->id_documento }}">{{ $gv->nombre }}</option>
+                        @endif
+                    @endforeach
+                </select>
+            @else
+            <select id="gv" name="gv" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                   <option value="">Sin selección</option>     
+                </select>
+                    @endif
+        </div>
+    </div>
+    </div>
+
+
+    
+
+    <div class="w-1/3 mx-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="movimiento">
+            Movimiento
+        </label>
+        <select id="movimiento" name="movimiento" class="w-full p-2 border border-gray-300 rounded">
+            <option value="Todo">Todo</option>
+            <option value="Retirado">Retirado</option>
+            <option value="Ingreso">Ingreso</option>
+        </select>
+    </div>
 
             <div class="flex justify-center gap-4">
-    <button type="submit" class="mt-5 bg-green-500 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-2 px-4">Ejecutar</button>
+
+    <button type="submit" class="mt-7 bg-green-500 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-2 px-4">Ejecutar</button>
     @if(count($elementos) > 0)
-        <a id="exportButton" href="{{ route('exportarDocumentoGV', ['elementos' => $elementos]) }}" class="mt-5 bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
+        <a id="exportButton" href="{{ route('exportarDocumentoGV', ['elementos' => $elementos]) }}" class="mt-7 bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 text-white font-medium rounded-lg text-sm py-2 px-4">Exportar</a>
     @else
-        <a id="exportButton" class="mt-5 bg-blue-500 text-white font-medium rounded-lg text-sm py-2 px-4 cursor-not-allowed opacity-50">Exportar</a>
+        <a id="exportButton" class="mt-7 bg-blue-500 text-white font-medium rounded-lg text-sm py-2 px-4 cursor-not-allowed opacity-50">Exportar</a>
     @endif
-</div>
+            </div>
+
+            </div>
 
             <br>
             @if(count($elementos) > 0)
@@ -128,51 +175,23 @@
 
     </div>
 </div>
-</body>
-</html>
 
 <script>
-    // Agregar un evento de cambio al campo de selección
-    document.getElementById('id_documento').addEventListener('input', function() {
-        var input = this.value;
-        var options = document.querySelectorAll('#id_documento option');
-        
-        // Mostrar todas las opciones por defecto
-        options.forEach(function(option) {
-            option.style.display = 'block';
-        });
+    function seleccionarExpediente() {
+        var expedienteList = document.getElementById('expedienteList');
+        var selectedId = expedienteList.options[expedienteList.selectedIndex].value;
 
-        if (input) {
-            // Determinar si la entrada es un número o texto
-            var isNumeric = !isNaN(input);
+        // Si el ID seleccionado es nulo o vacío, asigna un valor predeterminado
+        var gv = selectedId ? selectedId : '';
 
-            // Ocultar las opciones que no coinciden con la entrada del usuario
-            options.forEach(function(option) {
-                var idCliente = option.value;
-                var nombre = option.text;
+        // Modifica el valor del campo de id_documento antes de enviar el formulario
+        document.getElementById('gv').value = idDocumento;
 
-                if (isNumeric) {
-                    // Si la entrada es un número, comparar con el campo id_cliente
-                    if (idCliente.indexOf(input) === -1) {
-                        option.style.display = 'none';
-                    }
-                } else {
-                    // Si la entrada es texto, comparar con el campo nombre
-                    if (nombre.toLowerCase().indexOf(input.toLowerCase()) === -1) {
-                        option.style.display = 'none';
-                    }
-                }
-            });
-        }
-    });
-
-    // Agregar un evento de cambio al campo de selección para restablecer las opciones cuando se borra el texto
-    document.getElementById('id_documento').addEventListener('change', function() {
-        var options = document.querySelectorAll('#id_documento option');
-
-        // Mostrar todas las opciones por defecto
-        options.forEach(function(option) {
-            option.style.display = 'block';
-        });
-    });
+        // Resto de tu lógica...
+        console.log("ID Seleccionado:", selectedId);
+    }
 </script>
+
+
+</body>
+</html>

@@ -18,6 +18,7 @@ Route::view('/', 'welcome')->name('home');
 Route::get('/Ingreso',[LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/Registro',[LoginController::class, 'attemptLogin'])->name('autenticar');
 Route::get('/Opciones/{Permisos}',[LoginController::class, 'opciones'])->name('opciones');
+Route::post('/logout', [LoginController::class,'logout'])->name('logout');
 
 //HOME GV
 Route::get('/InicioGuardavalores/{idUser}',[UsuariosController::class, 'actividadInicioGV'])->name('expedientesGV');
@@ -41,16 +42,20 @@ Route::get('/ClientesEUB/{idUser}',[UsuariosController::class, 'clientesUsuarioB
 //INICIO
 Route::get('/Expedientes',[ExpedientesSuperController::class, 'inicioExpedientes'])->name('homeAdminExpedientes');
 
-
-
 //GUARDAVALORES
 //HOME INICIO ADMIN
 Route::get('/Guardavalores',[GuardavaloresController::class, 'homeAdminGuardavalores'])->name('homeAdminGuardavalores');
 Route::get('/AsignadosAClientesGV/{id_cliente}',[ClientesController::class, 'asignadosGV'])->name('cliente.asignadosGV');
 Route::get('/GVSeleccion/{id_cliente}',[ClientesController::class, 'clienteNuevoGV'])->name('clienteNuevoGV');
 Route::get('/GVCrear/{cliente}',[GuardavaloresController::class, 'documentoGV'])->name('crearDocumentoValor');
+
+Route::get('/GVCrear/{cliente}/{nuevoParametro}', [GuardavaloresController::class, 'documentoGVX'])->name('crearDocumentoValorX');
+
 Route::post('/GuardandoDV',[GuardavaloresController::class, 'storeDV'])->name('DVGuardar');
-Route::get('/ExpedientesHome',[GuardavaloresController::class, 'homeGV'])->name('homeGV');
+
+//REINGRESO GUARDAR ACTIVIDAD
+Route::post('/reingresoActividad',[GuardavaloresController::class, 'reingresoActividad'])->name('reingresoActividad');
+Route::get('/HGVS',[GuardavaloresController::class, 'homeGV'])->name('homeGV');
 Route::post('/BuscarGVD',[GuardavaloresController::class, 'buscarGV'])->name('guardavalores.search');
 
 Route::get('/ContratoCrear/{cliente}',[GuardavaloresController::class, 'contratoGV'])->name('crearContrato');
@@ -66,6 +71,10 @@ Route::get('/UsuariosSistema',[UsuariosSuperController::class, 'volverHomeSegunA
 
 //EDITAR EXPEDIENTE
 Route::get('/EditarGV/{id}',[GuardavaloresController::class, 'editarGV'])->name('editarGV');
+
+//REINGRESAR
+Route::get('/ReingresarGV/{id}',[GuardavaloresController::class, 'reingresar'])->name('reingresar');
+
 //ACTUALIZAR DATOS EXPEDIENTE
 Route::put('/actualizarGV/{id}', [GuardavaloresController::class, 'actualizarGV'])->name('actualizarGV');
 
@@ -81,6 +90,9 @@ Route::get('/nuevoClienteGV',[ClientesController::class, 'nuevoGV'])->name('clie
 //PARA GUARDAR
 Route::post('/GuardandoClienteGV',[ClientesController::class, 'storeGV'])->name('cliente.storeGV');
 
+//INGRESA HUELLA 
+//Route::post('/registrar-huella', [UsuariosSuperController::class, 'registrarHuella'])->name('usuario.registrarHuella');
+
 //HOME USUARIOS GV
 Route::get('/Usuarios/Listado',[UsuariosSuperController::class, 'listadoUsuarios'])->name('homeUsuarios');
 //PARA CREAR
@@ -91,8 +103,12 @@ Route::post('/GuardandoUsuario',[UsuariosSuperController::class, 'store'])->name
 Route::post('/UsuarioBuscar',[UsuariosSuperController::class, 'search'])->name('usuario.search');
 //VER DETALLES USUARIO
 Route::get('/UsuarioDetalles/{id_usuario}',[UsuariosSuperController::class, 'detallesUsuario'])->name('detallesUsuario');
+//BORRAR
+Route::get('/UsuarioEditar/{id_usuario}',[UsuariosSuperController::class, 'borrar'])->name('borrarUsuarioo');
 //EDITAR
-Route::get('/UsuarioEditar/{id_usuario}',[UsuariosSuperController::class, 'borrar'])->name('borrarUsuario');
+Route::get('/User/{usuario}/UDP',[UsuariosSuperController::class, 'edit'])->name('usuario.edit');
+//UPDATE
+Route::put('/Usuarios/{usuario}', [UsuariosSuperController::class, 'update'])->name('usuario.update');
 
 
 
@@ -113,10 +129,21 @@ Route::post('/ExpedientesActualizados',[ClientesController::class, 'storeExpedie
 Route::post('/GuardandoCliente',[ClientesController::class, 'store'])->name('cliente.store');
 //BUSCAR ASIGNADOS
 //Route::post('/AsignadosAClientes',[ClientesController::class, 'asignados'])->name('cliente.asignados');
+
 Route::get('/AsignadosAClientes/{id_cliente}',[ClientesController::class, 'asignados'])->name('cliente.asignados');
+
+Route::get('/cliente/{id}/edit', [ClientesController::class, 'edit'])->name('cliente.edit');
+
+Route::put('/cliente/{id}', [ClientesController::class, 'update'])->name('cliente.update');
+
+
 
 //CLIENTES VISTAS USUARIO BASICO Y ADMIN
 Route::get('/Clientes/{usuario}',[ClientesController::class, 'inicioClientesUsuarioX'])->name('homeClientesUsuario');
+
+//BORRAR
+Route::get('/usuario/eliminar/{IUE}', [ExpedientesSuperController::class, 'borrarUsuario'])->name('borrarUsuario');
+
 Route::post('/ClienteBuscarBasico',[ClientesController::class, 'searchBasico'])->name('clientesUsuario.search');
 //PARA CREAR
 Route::get('/nuevoCliente/{id_usuario}',[ClientesController::class, 'nuevoClienteBasico'])->name('cliente.nuevoBasico');
@@ -135,20 +162,14 @@ Route::post('/almacenarActividadUsuarioBasico', [ExpedientesSuperController::cla
 //BORRAR EXPEDIENTE
 Route::get('/expedientes/eliminar/{id}', [ExpedientesSuperController::class, 'eliminarExpediente'])->name('borrarExpediente');
 
-
 //ENTREGAR EXPEDIENTE
 Route::get('/devolverExpediente/{id_e}/{id_u}/{id_a}',[ExpedientesSuperController::class, 'devolverExpediente'])->name('devolverExpediente');
-
 
 //REPORTES BASICO
 Route::get('/ReporteGeneralBasico/{id_u}',[reportesController::class, 'homeReportesBasico'])->name('homeReportesBasico');
 
-
-
-
 //HOME EXPEDIENTES 
 Route::get('/Expedientes/homeExpedientesUB/{usuario}',[ExpedientesSuperController::class, 'homeExpedientesUB'])->name('homeExpedientesUB');
-
 
 //HOME EXPEDIENTES 
 Route::get('/Expedientes/Listado',[ExpedientesSuperController::class, 'listadoExpedientes'])->name('homeExpedientes');
@@ -164,6 +185,7 @@ Route::post('/almacenar-actividad', [ExpedientesSuperController::class, 'almacen
 Route::get('/EditarExp/{id_expediente}',[ExpedientesSuperController::class, 'editarExp'])->name('editarExp');
 //ACTUALIZAR DATOS EXPEDIENTE
 Route::put('/actualizarExp/{id_expediente}', [ExpedientesSuperController::class, 'actualizarExp'])->name('actualizarExp');
+
 
 
 Route::get('/ReporteGeneralSU',[reportesController::class, 'homeReportesSuper'])->name('homeReportesUno');
@@ -191,7 +213,12 @@ Route::get('/ReporteDocumentoGV',[reportesController::class, 'ReportesDocumentoG
 Route::post('/ExpedienteDocumentoalGV', [reportesController::class, 'ejecutarDocumentoGV'])->name('ejecutarDocumentoGV');
 Route::get('/exportarDocumentoGV', [reportesController::class, 'exportarDocumentoGV'])->name('exportarDocumentoGV');
 
-//REPORTE TRES, POR USUARIO AUN SIN DESARROLLAR
+//REPORTE TRES
 Route::get('/ReporteUsuarioGV',[reportesController::class, 'ReportesUsuarioGV'])->name('ReporteUsuarioGV');
 Route::post('/EjecucionUsuarioGV', [reportesController::class, 'ejecutarUsuarioGV'])->name('ejecutarUsuarioGV');
 Route::get('/exportarUsuarioGV', [reportesController::class, 'exportarUsuarioGV'])->name('exportarUsuarioGV');
+
+//REPORTE CUATRO GV
+Route::get('/ReporteMovGV',[reportesController::class, 'ReportesMovGV'])->name('ReporteMovGV');
+Route::post('/EjecucionMovGV', [reportesController::class, 'ejecutarMovGV'])->name('ejecutarMovGV');
+Route::get('/exportarMovGV', [reportesController::class, 'exportarMovGV'])->name('exportarMovGV');

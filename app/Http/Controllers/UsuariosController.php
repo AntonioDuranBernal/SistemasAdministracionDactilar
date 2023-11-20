@@ -13,6 +13,7 @@ class UsuariosController extends Controller
     public function __construct(){
         $this->middleware('auth');
     }
+    
 
     public function actividadInicioGV($idUser) {
 
@@ -20,17 +21,6 @@ class UsuariosController extends Controller
                 $idUser = DB::table('users')
                 ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
                 ->value('idUsuarioSistema');
-            
-            //$usuario = Auth::user();
-            //$idUser = $usuario->idUsuarioSistema;   
-            //auth()->user()->idUsuarioSistema
-            
-
-            //Auth::login($usuario);
-            //$idUser = $usuario->idUsuarioSistema;
-            //$nombre = $usuario->nombre;
-    
-            //$idUser = 7;
     
             $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
     
@@ -68,13 +58,18 @@ class UsuariosController extends Controller
     
     public function actividadInicio($idUser) {
 
-        $usuario = Auth::user();
-        //$idUser = $usuario->idUsuarioSistema;
-        //$nombre = $usuario->nombre;
+        //$usuario = Auth::user();
         
-        $idUser = 7;
+        $idUser = DB::table('users')
+                ->where('idUsuarioSistema', auth()->id()) // Filtrar por el ID del usuario autenticado
+                ->value('idUsuarioSistema');
+
         $nombre = ' ES BASICO EN USUARIO CONTROLLER ';
         echo "USUARIO LOGEADOO: ".$idUser. " NOMBRE: ".$nombre;
+
+        DB::table('users')     //AISGANCION DE AREA EN USO
+        ->where('idUsuarioSistema', $idUser)
+        ->update(['area' => 1]);
 
         $user = DB::table('users')->where('idUsuarioSistema', $idUser)->first();
         
