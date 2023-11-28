@@ -114,9 +114,7 @@
         </div>
     </div>
 
-    <!--<button id="fingerPrintButton">Capturar Huella Digital</button>-->
-
-    <!--<div id="mensajeHuella" class="text-gray-700 text-sm font-bold mb-2"></div>-->
+    <button onclick="mostrarAlerta()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Capturar Huella</button>
 
     <!-- Sexta fila - Botones -->
     <div class="flex items-center justify-center mt-4">
@@ -156,6 +154,9 @@
         transform: translate(-50%, -50%);
     }
 </style>
+
+<!-- Agrega esta línea al final del archivo HTML, antes de </body> -->
+<script src="{{ asset('js/funciones.js') }}"></script>
 
 </body>
 
