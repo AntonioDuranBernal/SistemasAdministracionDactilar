@@ -1,6 +1,10 @@
 
-function mostrarAlerta() {
-    alert('Se realizó la acción');
+function mostrarCard() {
+    var card = document.getElementById('miCard');
+    card.classList.remove('hidden');
 }
 
-
+function cerrarCard() {
+    var card = document.getElementById('miCard');
+    card.classList.add('hidden');
+}
