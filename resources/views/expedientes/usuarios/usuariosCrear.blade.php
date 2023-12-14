@@ -7,21 +7,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrar Cliente</title>
+  <title>Registrar Usuario</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css">
-  
-  <!--<script src="node_modules/@digitalpersona/devices/modules/websdk/index.js"></script>
-  <script src="websdk/websdk.client.ui.min.js"></script>-->
 
   <script src="core/modules/WebSdk/index.js"></script>
-  <script type="text/javascript" src="websdk/websdk.client.ui.min.js"></script>
+  <script src="{{ asset('js/funciones.js') }}"></script>
 
 </head>
 <body>
 <div class="container mx-auto p-4 relative">
 
 
-<div id="miCard" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+    <div id="miCard" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
     <!-- Contenido del card 
 
     <a href="#" onclick="cerrarCard()" class="flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
@@ -39,7 +36,7 @@
         <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"></p>
         
     </div>
-</div>
+    </div>
 
 
 
@@ -143,14 +140,9 @@
         </div>
     </div>
 
-
-
-    <!--    <button onclick="mostrarAlerta()"  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Capturar Huella</button>
-
+    <!--
+    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Capturar Huella</button>
     -->
-    <button onclick="mostrarCard()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Capturar Huella</button>
-
-
 
     <!-- Sexta fila - Botones -->
     <div class="flex items-center justify-center mt-4">
@@ -211,10 +203,6 @@
 
 
 </style>
-
-<!-- Agrega esta línea al final del archivo HTML, antes de </body> -->
-<script src="{{ asset('js/funciones.js') }}"></script>
-
 </body>
 
 </html>
